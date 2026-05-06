@@ -1,0 +1,46 @@
+<odoo>
+    <record id="view_hr_job_form_inherit_approval" model="ir.ui.view">
+        <field name="name">hr.job.form.inherit.approval</field>
+        <field name="model">hr.job</field>
+        <field name="inherit_id" ref="hr.view_hr_job_form"/>
+        <field name="arch" type="xml">
+            
+            <!-- Adding buttons to the status bar -->
+            <xpath expr="//header" position="inside">
+                <button name="action_submit_first" string="Submit to 1st Stage" 
+                        type="object" invisible="state != 'draft'" class="oe_highlight"/>
+                
+                <button name="action_approve_second" string="Approve 2nd Stage" 
+                        type="object" invisible="state != 'first_stage'" class="oe_highlight"/>
+
+                <button name="action_approve_final" string="Approve Final Stage" 
+                        type="object" invisible="state != 'second_stage'" class="oe_highlight"/>
+
+                <button name="action_set_to_open" string="Publish &amp; Start" 
+                        type="object" invisible="state != 'final_stage'" class="oe_highlight"/>
+
+                <button name="action_refuse" string="Refuse" 
+                        type="object" invisible="state not in ['first_stage', 'second_stage', 'final_stage']"/>
+                
+                <field name="state" widget="statusbar" 
+                       statusbar_visible="draft,first_stage,second_stage,final_stage,open"/>
+            </xpath>
+
+            <!-- Adding Approver selection and Bangla published label -->
+            <xpath expr="//sheet" position="inside">
+                <group string="Approver Management">
+                    <group>
+                        <field name="approver_stage_1" readonly="state != 'draft'"/>
+                        <field name="approver_stage_2" readonly="state != 'draft'"/>
+                        <field name="approver_final" readonly="state != 'draft'"/>
+                    </group>
+                    <group>
+                        <!-- Website published field with Bangla Label -->
+                        <field name="website_published" string="ওয়েবসাইটে প্রকাশিত"/>
+                    </group>
+                </group>
+            </xpath>
+            
+        </field>
+    </record>
+</odoo>
