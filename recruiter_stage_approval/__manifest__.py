@@ -15,7 +15,8 @@
     'license': 'LGPL-3',
     'depends': ['base', 'hr_recruitment','website_hr_recruitment','mail'],
     'data': [
-        'views/stage.xml',
+        'security/security.xml',
+        'views/hr_job_view.xml',
     ],
     'installable': True,
     'application': True,

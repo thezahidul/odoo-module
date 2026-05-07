@@ -1,1 +1,1 @@
-from . import approve
+from . import hr_job
