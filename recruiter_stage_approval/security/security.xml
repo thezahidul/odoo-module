@@ -8,8 +8,7 @@
 
         <record id="group_hr_job_approver" model="res.groups">
             <field name="name">Job Approval Access</field>
-            <field name="privilege_id" ref="privilege_recruitment_approval"/>
-            
+            <field name="privilege_id" ref="privilege_recruitment_approval"/>            
             <field name="implied_ids" eval="[(4, ref('hr_recruitment.group_hr_recruitment_user'))]"/>
         </record>
     </data>
