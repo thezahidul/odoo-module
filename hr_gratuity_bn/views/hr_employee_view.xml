@@ -7,40 +7,35 @@
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
                 <page string="Gratuity (BD Law)" name="gratuity_details">
+                    <field name="can_enable_gratuity" invisible="1"/>
+
                     <group string="HR Policy &amp; Eligibility">
                         <group>
-                            <field name="is_gratuity_eligible" widget="boolean_toggle"/>
+                            <field name="is_gratuity_eligible" 
+                                   widget="boolean_toggle" 
+                                   readonly="not can_enable_gratuity"/>
                             <field name="min_service_years" invisible="not is_gratuity_eligible"/>
                         </group>
                         <group>
                             <field name="employee_type" readonly="1"/>
+                            <field name="contract_type_id" readonly="1"/>
                         </group>
                     </group>
 
                     <group string="Service Information" invisible="not is_gratuity_eligible">
                         <group>
-                            <field name="manual_joining_date" required="is_gratuity_eligible"/>
+                            <field name="manual_joining_date" required="1"/>
                         </group>
                         <group>
-                            <field name="manual_basic_salary" string="Last Drawn Basic" required="is_gratuity_eligible"/>
+                            <field name="manual_basic_salary" string="Last Drawn Basic" required="1"/>
                         </group>
                     </group>
 
                     <group string="Final Calculation" invisible="not is_gratuity_eligible">
                         <group>
-                            <field name="gratuity_amount" readonly="1" decoration-bf="1" decoration-info="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="currency_id" invisible="1"/>
+                            <field name="gratuity_amount" readonly="1" decoration-bf="1" decoration-info="1"/>
                         </group>
                     </group>
-
-                    <separator string="Calculation Logic Applied" invisible="not is_gratuity_eligible"/>
-                    <div class="text-muted" invisible="not is_gratuity_eligible">
-                        <ul>
-                            <li><b>Rounding Rule:</b> Additional service days &gt;= 180 days = 1 Full Year.</li>
-                            <li><b>Slab 1 (1-5 Years):</b> 30 days Basic (Factor 1.0).</li>
-                            <li><b>Slab 2 (>5 Years):</b> 45 days Basic (Factor 1.5).</li>
-                        </ul>
-                    </div>
                 </page>
             </xpath>
         </field>
