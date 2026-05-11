@@ -13,7 +13,8 @@
                         <group>
                             <field name="is_gratuity_eligible" 
                                    widget="boolean_toggle" 
-                                   readonly="not can_enable_gratuity"/>
+                                   readonly="not can_enable_gratuity"
+                                   help="Employee must to be Permanent or Full Time."/>
                             <field name="min_service_years" invisible="not is_gratuity_eligible"/>
                         </group>
                         <group>
@@ -22,18 +23,20 @@
                         </group>
                     </group>
 
-                    <group string="Service Information" invisible="not is_gratuity_eligible">
+                    <group string="Inherited System Data" invisible="not is_gratuity_eligible">
                         <group>
-                            <field name="manual_joining_date" required="1"/>
+                            <field name="contract_date_start" readonly="1" string="Joining Date"/>
+                            <field name="departure_date" readonly="1" string="Departure/Resign Date"/>
                         </group>
                         <group>
-                            <field name="manual_basic_salary" string="Last Drawn Basic" required="1"/>
+                            <field name="wage" readonly="1" string="Current Basic Wage"/>
+                            <field name="currency_id" invisible="1"/>
                         </group>
                     </group>
 
-                    <group string="Final Calculation" invisible="not is_gratuity_eligible">
+                    <group string="Final Result" invisible="not is_gratuity_eligible">
                         <group>
-                            <field name="gratuity_amount" readonly="1" decoration-bf="1" decoration-info="1"/>
+                            <field name="gratuity_amount" readonly="1" decoration-bf="1" decoration-info="1" widget="monetary"/>
                         </group>
                     </group>
                 </page>
