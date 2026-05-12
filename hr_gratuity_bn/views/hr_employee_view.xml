@@ -11,7 +11,9 @@
 
                     <group string="HR Policy &amp; Eligibility">
                         <group>
-                            <field name="is_gratuity_eligible" widget="boolean_toggle" readonly="not can_enable_gratuity" help="Employee must be Permanent or Full Time."/>
+                            <field name="is_gratuity_eligible" widget="boolean_toggle" 
+                                   readonly="not can_enable_gratuity" 
+                                   help="Employee must be Permanent or Full Time."/>
                             <field name="min_service_years" invisible="not is_gratuity_eligible"/>
                         </group>
                         <group>
@@ -43,12 +45,16 @@
 
                     <group string="Final Settlement" invisible="not is_gratuity_eligible">
                         <group>
-                            <field name="gratuity_amount" string="Total Gross Gratuity" decoration-bf="1"/>
-                            <field name="gratuity_taxable_amount" string="Taxable Portion" invisible="gratuity_taxable_amount == 0" decoration-warning="1"/>
+                            <field name="gratuity_amount" string="Total Gross Gratuity" decoration-bf="1" widget="monetary"/>
+                            <field name="gratuity_taxable_amount" string="Taxable Portion" 
+                                   invisible="gratuity_taxable_amount == 0" 
+                                   decoration-warning="1" widget="monetary"/>
                         </group>
                         <group>
-                            <field name="gratuity_tax_amount" string="TDS (Tax)"/>
-                            <field name="gratuity_net_payable" string="Net Payout" decoration-success="1" decoration-bf="1"/>
+                            <group>
+                                <field name="gratuity_tax_amount" string="TDS (Tax)" widget="monetary" decoration-danger="gratuity_tax_amount > 0"/>
+                                <field name="gratuity_net_payable" string="Net Payout" decoration-success="1" decoration-bf="1" widget="monetary"/>
+                            </group>
                         </group>
                     </group>
                 </page>
