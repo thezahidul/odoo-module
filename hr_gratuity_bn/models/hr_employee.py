@@ -19,8 +19,15 @@ class HrEmployee(models.Model):
 
     # --- Result Fields ---
     gratuity_amount = fields.Float(string="Gross Gratuity", compute="_compute_gratuity_totals", store=True)
+    gratuity_taxable_amount = fields.Float(
+        string="Taxable Amount", 
+        compute="_compute_gratuity_totals", 
+        store=True,
+        help="The portion of gratuity subject to tax after exemption."
+    )
     gratuity_tax_amount = fields.Float(string="Tax Deduction", compute="_compute_gratuity_totals", store=True)
     gratuity_net_payable = fields.Float(string="Net Payout", compute="_compute_gratuity_totals", store=True)
+    
 
     @api.depends('employee_type', 'contract_type_id')
     def _compute_can_enable_gratuity(self):
@@ -65,10 +72,13 @@ class HrEmployee(models.Model):
             # ট্যাক্স লজিক
             taxable_income = 0.0
             if employee.is_nbr_approved:
-                if gross_amount > employee.gratuity_exemption_limit:
-                    taxable_income = gross_amount - employee.gratuity_exemption_limit
+                # যদি গ্রস অ্যামাউন্ট ২.৫ কোটির বেশি হয়, শুধু বাড়তি অংশ ট্যাক্সেবল
+                if employee.gratuity_amount > employee.gratuity_exemption_limit:
+                    taxable_income = employee.gratuity_amount - employee.gratuity_exemption_limit
             else:
-                taxable_income = gross_amount
+                # অনুমোদিত না হলে পুরো টাকাই ট্যাক্সেবল
+                taxable_income = employee.gratuity_amount
             
+            employee.gratuity_taxable_amount = taxable_income
             employee.gratuity_tax_amount = (taxable_income * employee.gratuity_tax_percent) / 100.0
-            employee.gratuity_net_payable = gross_amount - employee.gratuity_tax_amount
+            employee.gratuity_net_payable = employee.gratuity_amount - employee.gratuity_tax_amount
