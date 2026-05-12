@@ -11,10 +11,7 @@
 
                     <group string="HR Policy &amp; Eligibility">
                         <group>
-                            <field name="is_gratuity_eligible" 
-                                   widget="boolean_toggle" 
-                                   readonly="not can_enable_gratuity"
-                                   help="Employee must to be Permanent or Full Time."/>
+                            <field name="is_gratuity_eligible" widget="boolean_toggle" readonly="not can_enable_gratuity" help="Employee must be Permanent or Full Time."/>
                             <field name="min_service_years" invisible="not is_gratuity_eligible"/>
                         </group>
                         <group>
@@ -29,14 +26,26 @@
                             <field name="departure_date" readonly="1" string="Departure/Resign Date"/>
                         </group>
                         <group>
-                            <field name="wage" readonly="1" string="Current Basic Wage"/>
+                            <field name="wage" readonly="1" string="Current Gross Wage"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
                     </group>
 
-                    <group string="Final Result" invisible="not is_gratuity_eligible">
+                    <group string="Tax Configuration" invisible="not is_gratuity_eligible">
                         <group>
-                            <field name="gratuity_amount" readonly="1" decoration-bf="1" decoration-info="1" widget="monetary"/>
+                            <field name="is_nbr_approved" widget="boolean_toggle"/>
+                            <field name="gratuity_exemption_limit" invisible="not is_nbr_approved"/>
+                        </group>
+                        <group>
+                            <field name="gratuity_tax_percent"/>
+                        </group>
+                    </group>
+
+                    <group string="Final Settlement" invisible="not is_gratuity_eligible">
+                        <group>
+                            <field name="gratuity_amount" string="Total Amount" decoration-bf="1" widget="monetary"/>
+                            <field name="gratuity_tax_amount" string="TDS (Tax)" widget="monetary" decoration-danger="gratuity_tax_amount > 0"/>
+                            <field name="gratuity_net_payable" string="Net Payout" decoration-success="1" decoration-bf="1" widget="monetary"/>
                         </group>
                     </group>
                 </page>
