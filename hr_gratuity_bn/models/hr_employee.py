@@ -23,7 +23,7 @@ class HrEmployee(models.Model):
     # --- Configuration Fields ---
     is_nbr_approved = fields.Boolean(
         string="Is NBR Approved?", 
-        default=True,
+        default=False,
         help="If checked, the 2.5 Crore exemption applies per NBR rules."
     )
     gratuity_tax_percent = fields.Float(

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_gratuity_settlement" model="ir.actions.report">
+        <field name="name">Gratuity Settlement Report</field>
+        <field name="model">hr.employee</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hr_gratuity_bn.report_gratuity_template</field>
+        <field name="report_file">hr_gratuity_bn.report_gratuity_template</field>
+        <field name="print_report_name">'Gratuity_Settlement_%s' % (object.name)</field>
+        <field name="binding_model_id" ref="hr.model_hr_employee"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

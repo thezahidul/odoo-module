@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_gratuity_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: 'Helvetica';">
+                        <div class="text-center" style="border-bottom: 2px solid #000; margin-bottom: 20px;">
+                            <h2>Gratuity Settlement Statement</h2>
+                            <p>Bangladesh Labor Law Compliance</p>
+                        </div>
+
+                        <table class="table table-sm table-borderless" style="margin-bottom: 30px;">
+                            <tr>
+                                <td><strong>Employee Name:</strong> <t t-esc="o.name"/></td>
+                                <td><strong>Employee ID:</strong> <t t-esc="o.registration_number"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Joining Date:</strong> <t t-esc="o.contract_date_start"/></td>
+                                <td><strong>Departure Date:</strong> <t t-esc="o.departure_date or 'N/A'"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Basic Wage:</strong> <t t-esc="o.wage" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                <td><strong>Contract Type:</strong> <t t-esc="o.contract_type_id.name"/></td>
+                            </tr>
+                        </table>
+
+                        <h4>Breakdown of Settlement</h4>
+                        <table class="table table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Description</th>
+                                    <th class="text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Total Service Period Amount (Gross)</td>
+                                    <td class="text-right"><span t-field="o.gratuity_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                </tr>
+                                <tr t-if="o.gratuity_taxable_amount > 0">
+                                    <td>Taxable Portion (Above Exemption Limit)</td>
+                                    <td class="text-right"><span t-field="o.gratuity_taxable_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                </tr>
+                                <tr class="text-danger">
+                                    <td>Tax Deduction (TDS at <t t-esc="o.gratuity_tax_percent"/>%)</td>
+                                    <td class="text-right">- <span t-field="o.gratuity_tax_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                </tr>
+                                <tr class="table-active">
+                                    <td><strong>Net Payable Amount</strong></td>
+                                    <td class="text-right"><strong><span t-field="o.gratuity_net_payable" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="row" style="margin-top: 100px;">
+                            <div class="col-4 text-center">
+                                <hr style="border-top: 1px solid black;"/>
+                                <p>Employee Signature</p>
+                            </div>
+                            <div class="col-4"></div>
+                            <div class="col-4 text-center">
+                                <hr style="border-top: 1px solid black;"/>
+                                <p>Authorized Signatory</p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
