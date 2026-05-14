@@ -1,0 +1,7 @@
+.modal-dialog.modal-lg {
+    max-width: 60% !important;
+}
+
+.modal-content {
+    height: 90vh !important;
+}
