@@ -1,72 +1,167 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
     <template id="report_gratuity_template">
         <t t-call="web.html_container">
-            <t t-foreach="docs" t-as="o">
-                <t t-call="web.external_layout">
-                    <div class="page" style="font-family: 'Helvetica';">
-                        <div class="text-center" style="border-bottom: 2px solid #000; margin-bottom: 20px;">
-                            <h2>Gratuity Settlement Statement</h2>
-                            <p>Bangladesh Labor Law Compliance</p>
-                        </div>
-
-                        <table class="table table-sm table-borderless" style="margin-bottom: 30px;">
-                            <tr>
-                                <td><strong>Employee Name:</strong> <t t-esc="o.name"/></td>
-                                <td><strong>Employee ID:</strong> <t t-esc="o.registration_number"/></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Joining Date:</strong> <t t-esc="o.contract_date_start"/></td>
-                                <td><strong>Departure Date:</strong> <t t-esc="o.departure_date or 'N/A'"/></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Basic Wage:</strong> <t t-esc="o.wage" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
-                                <td><strong>Contract Type:</strong> <t t-esc="o.contract_type_id.name"/></td>
-                            </tr>
-                        </table>
-
-                        <h4>Breakdown of Settlement</h4>
-                        <table class="table table-bordered">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th>Description</th>
-                                    <th class="text-right">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Total Service Period Amount (Gross)</td>
-                                    <td class="text-right"><span t-field="o.gratuity_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
-                                </tr>
-                                <tr t-if="o.gratuity_taxable_amount > 0">
-                                    <td>Taxable Portion (Above Exemption Limit)</td>
-                                    <td class="text-right"><span t-field="o.gratuity_taxable_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
-                                </tr>
-                                <tr class="text-danger">
-                                    <td>Tax Deduction (TDS at <t t-esc="o.gratuity_tax_percent"/>%)</td>
-                                    <td class="text-right">- <span t-field="o.gratuity_tax_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
-                                </tr>
-                                <tr class="table-active">
-                                    <td><strong>Net Payable Amount</strong></td>
-                                    <td class="text-right"><strong><span t-field="o.gratuity_net_payable" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></strong></td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <div class="row" style="margin-top: 100px;">
-                            <div class="col-4 text-center">
-                                <hr style="border-top: 1px solid black;"/>
-                                <p>Employee Signature</p>
-                            </div>
-                            <div class="col-4"></div>
-                            <div class="col-4 text-center">
-                                <hr style="border-top: 1px solid black;"/>
-                                <p>Authorized Signatory</p>
-                            </div>
-                        </div>
-                    </div>
-                </t>
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="hr_gratuity_bn.report_gratuity_document"/>
             </t>
         </t>
     </template>
+
+    <template id="report_gratuity_document">
+        <t t-call="web.basic_layout">
+            <t t-set="company" t-value="doc.company_id or res_company"/>
+            
+            <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; color: #333; line-height: 1.6;">
+
+                <div class="row align-items-center" style="padding-bottom: 20px; margin-bottom: 25px;">
+                    <div class="col-6">
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 65px; max-width: 220px; object-fit: contain;" alt="Company Logo"/>
+                    </div>
+                    <div class="col-6 text-right" style="font-size: 11px; color: #555; line-height: 1.4;">
+                        <h4 t-field="company.name" style="font-weight: 700; margin: 0 0 4px 0; color: #111; text-transform: uppercase; letter-spacing: 0.5px; font-size: 16px;"/>
+                        <div t-field="company.partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}' style="font-size: 11px; font-weight: 300;"/>
+                    </div>
+                </div>
+
+                <div style="height: 4px; background: linear-gradient(90deg, #1b5e20 0%, #388e3c 100%); margin-bottom: 30px; border-radius: 2px;"/>
+
+                <div class="text-center" style="margin-bottom: 35px;">
+                    <h2 style="font-weight: 800; color: #111; letter-spacing: 0.5px; margin-bottom: 6px; font-size: 24px; text-transform: uppercase;">
+                        Gratuity Settlement Statement
+                    </h2>
+                    <span style="background-color: #f1f8e9; color: #2e7d32; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 12px; text-transform: uppercase; border: 1px solid #c8e6c9;">
+                        As per Bangladesh Labor Act 2006
+                    </span>
+                </div>
+
+                <div style="background-color: #fafafa; border: 1px solid #eef2f3; border-radius: 6px; padding: 15px; margin-bottom: 30px;">
+                    <table style="width:100%; font-size:12px; border-collapse:collapse;">
+                        <tr>
+                            <td style="width:18%; padding:6px 0; color:#777; font-weight:500;">Employee Name</td>
+                            <td style="width:32%; padding:6px 0; font-weight:700; color:#111;"><t t-esc="doc.name"/></td>
+                            <td style="width:18%; padding:6px 0; color:#777; font-weight:500;">Employee ID</td>
+                            <td style="width:32%; padding:6px 0; font-weight:600; color:#333;"><t t-esc="doc.barcode or '-'"/></td>
+                        </tr>
+                        <tr style="border-top: 1px solid #f0f0f0;">
+                            <td style="padding:8px 0; color:#777; font-weight:500;">Job Position</td>
+                            <td style="padding:8px 0; font-weight:600; color:#333;"><t t-esc="doc.job_id.name or '-'"/></td>
+                            <td style="padding:8px 0; color:#777; font-weight:500;">Department</td>
+                            <td style="padding:8px 0; font-weight:600; color:#333;"><t t-esc="doc.department_id.name or '-'"/></td>
+                        </tr>
+                        <tr style="border-top: 1px solid #f0f0f0;">
+                            <td style="padding:8px 0; color:#777; font-weight:500;">Joining Date</td>
+                            <td style="padding:8px 0; color:#333;"><span t-field="doc.contract_date_start"/></td>
+                            <td style="padding:8px 0; color:#777; font-weight:500;">Last Working Day</td>
+                            <td style="padding:8px 0; font-weight:600;">
+                                <t t-if="doc.departure_date"><span t-field="doc.departure_date"/></t>
+                                <t t-else=""><span class="text-success" style="font-weight:bold;">Active</span></t>
+                            </td>
+                        </tr>
+                        <tr style="border-top: 1px solid #f0f0f0;">
+                            <td style="padding:8px 0; color:#777; font-weight:500;">Gross Wage</td>
+                            <td style="padding:8px 0; color:#333; font-weight:600;">
+                                <span t-field="doc.wage" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/>
+                            </td>
+                            <td style="padding:8px 0; color:#777; font-weight:500;">NBR Approved Status</td>
+                            <td style="padding:8px 0; font-weight:700;">
+                                <t t-if="doc.is_nbr_approved">
+                                    <span style="color:#2e7d32;">Approved</span>
+                                </t>
+                                <t t-else=""><span style="color:#c62828;">Non-Approved</span></t>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div style="border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden; margin-bottom: 25px; background: #fff;">
+                    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                        <thead>
+                            <tr style="background-color:#263238; color:#fff; font-size: 11px; letter-spacing: 0.5px;">
+                                <th style="padding:12px 15px; text-align:left; text-transform:uppercase; font-weight: 600;">Description of Funds</th>
+                                <th style="padding:12px 15px; text-align:right; text-transform:uppercase; font-weight: 600; width: 30%;">Amount (BDT)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid #f0f0f0;">
+                                <td style="padding:12px 15px; color: #333;">Gross Gratuity (Earned Benefit)</td>
+                                <td style="padding:12px 15px; text-align:right; font-weight: 600; color: #111;">
+                                    <span t-field="doc.gratuity_amount" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.is_nbr_approved" style="border-bottom:1px solid #f0f0f0; background-color: #fafafa;">
+                                <td style="padding:12px 15px; color:#1565C0; font-weight: 500;">↳ NBR Tax Exemption Limit</td>
+                                <td style="padding:12px 15px; text-align:right; color:#1565C0; font-weight: 600;">
+                                    <span t-field="doc.gratuity_exemption_limit" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.gratuity_taxable_amount > 0" style="border-bottom:1px solid #f0f0f0;">
+                                <td style="padding:12px 15px; color:#e65100;">↳ Taxable Portion</td>
+                                <td style="padding:12px 15px; text-align:right; color:#e65100; font-weight: 600;">
+                                    <span t-field="doc.gratuity_taxable_amount" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr t-if="doc.gratuity_tax_amount > 0" style="border-bottom:1px solid #e0e0e0; background-color: #fff8f8;">
+                                <td style="padding:12px 15px; color:#c62828; font-weight: 500;">↳ Income Tax / TDS Deduction @ <t t-esc="doc.gratuity_tax_percent"/>%</td>
+                                <td style="padding:12px 15px; text-align:right; color:#c62828; font-weight: 600;">
+                                    (−) <span t-field="doc.gratuity_tax_amount" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr style="background-color:#e8f5e9; font-size:15px; border-top:2px solid #2e7d32;">
+                                <td style="padding:14px 15px; color:#1b5e20; font-weight:700; text-transform: uppercase; letter-spacing: 0.3px;">Net Payable Settlement</td>
+                                <td style="padding:14px 15px; text-align:right; color:#1b5e20; font-weight:800;">
+                                    <span t-field="doc.gratuity_net_payable" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="font-size:11px; color:#666; margin-bottom:50px; background-color: #f9f9f9; border-left:4px solid #78909c; padding: 10px 15px; border-radius: 0 4px 4px 0; line-height: 1.6;">
+                    <p style="margin:0 0 4px 0; font-weight: 600; color: #455a64;">Compliance Notes:</p>
+                    <p style="margin:2px 0;">* Final settlement fund computed strictly in accordance with Section 27-28 of the Bangladesh Labor Act, 2006.</p>
+                    <p style="margin:2px 0;">* Service history verification calculated using the statutory 180-day fraction rounding rule.</p>
+                    <p t-if="doc.is_nbr_approved" style="margin:2px 0;">
+                        * Valid NBR Exemption applied up to BDT <t t-esc="'{:,.0f}'.format(doc.gratuity_exemption_limit)"/> as per the Income Tax Act.
+                    </p>
+                </div>
+
+                <table style="width:100%; margin-top:80px; font-size:12px;">
+                    <tr>
+                        <td style="width:40%; text-align:center; padding-top:12px; border-top:1px solid #777; color: #222; font-weight: 600;">
+                            Employee Signature
+                        </td>
+                        <td style="width:20%;"></td>
+                        <td style="width:40%; text-align:center; padding-top:12px; border-top:1px solid #777; color: #222; font-weight: 600;">
+                            Authorized Signatory
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align:center; color:#777; font-size:11px; padding-top:4px; font-style: italic;">
+                            <t t-esc="doc.name"/>
+                        </td>
+                        <td></td>
+                        <td style="text-align:center; color:#777; font-size:11px; padding-top:4px; font-style: italic;">
+                            For <t t-esc="company.name"/>
+                        </td>
+                    </tr>
+                </table>
+
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; border-top: 1px solid #e0e0e0; padding-top: 8px; font-size: 10px; color: #888; width: 100%;">
+                    <div class="row">
+                        <div class="col-8 text-left">
+                            <span t-if="company.report_footer" t-field="company.report_footer"/>
+                            <t t-else="">This is a computer-generated statement and requires no physical seal.</t>
+                        </div>
+                        <div class="col-4 text-right" style="font-weight: 500;">
+                            Page <span class="page"/> of <span class="topage"/>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </t>
+    </template>
+
 </odoo>

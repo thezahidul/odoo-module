@@ -6,9 +6,10 @@
     "sequence": 20,
     "depends": ["base", "hr"],
     "data": [
+        'views/report_action.xml',
+        'views/report_template.xml',
         "views/hr_employee_view.xml",
-        "views/report_action.xml",
-        "views/report_template.xml",
+        
     ],
     "author": "Zahidul Islam",
     "license": "LGPL-3",
