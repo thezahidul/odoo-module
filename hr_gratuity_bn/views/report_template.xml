@@ -12,16 +12,16 @@
     <template id="report_gratuity_document">
         <t t-call="web.basic_layout">
             <t t-set="company" t-value="doc.company_id or res_company"/>
-            
+
             <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; color: #333; line-height: 1.6;">
 
                 <div class="row align-items-center" style="padding-bottom: 20px; margin-bottom: 25px;">
                     <div class="col-6">
                         <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 65px; max-width: 220px; object-fit: contain;" alt="Company Logo"/>
                     </div>
-                    <div class="col-6 text-right" style="font-size: 11px; color: #555; line-height: 1.4;">
-                        <h4 t-field="company.name" style="font-weight: 700; margin: 0 0 4px 0; color: #111; text-transform: uppercase; letter-spacing: 0.5px; font-size: 16px;"/>
-                        <div t-field="company.partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}' style="font-size: 11px; font-weight: 300;"/>
+                    <div class="col-6 text-right text-end" style="font-size: 11px; color: #555; line-height: 1.4; text-align: right;">
+                        <h4 t-field="company.name" style="font-weight: 700; margin: 0 0 4px 0; color: #111; text-transform: uppercase; letter-spacing: 0.5px; font-size: 16px; text-align: right;"/>
+                        <div t-field="company.partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}' style="font-size: 11px; font-weight: 300; text-align: right;"/>
                     </div>
                 </div>
 
@@ -40,23 +40,37 @@
                     <table style="width:100%; font-size:12px; border-collapse:collapse;">
                         <tr>
                             <td style="width:18%; padding:6px 0; color:#777; font-weight:500;">Employee Name</td>
-                            <td style="width:32%; padding:6px 0; font-weight:700; color:#111;"><t t-esc="doc.name"/></td>
+                            <td style="width:32%; padding:6px 0; font-weight:700; color:#111;">
+                                <t t-esc="doc.name"/>
+                            </td>
                             <td style="width:18%; padding:6px 0; color:#777; font-weight:500;">Employee ID</td>
-                            <td style="width:32%; padding:6px 0; font-weight:600; color:#333;"><t t-esc="doc.barcode or '-'"/></td>
+                            <td style="width:32%; padding:6px 0; font-weight:600; color:#333;">
+                                <t t-esc="doc.barcode or '-'"/>
+                            </td>
                         </tr>
                         <tr style="border-top: 1px solid #f0f0f0;">
                             <td style="padding:8px 0; color:#777; font-weight:500;">Job Position</td>
-                            <td style="padding:8px 0; font-weight:600; color:#333;"><t t-esc="doc.job_id.name or '-'"/></td>
+                            <td style="padding:8px 0; font-weight:600; color:#333;">
+                                <t t-esc="doc.job_id.name or '-'"/>
+                            </td>
                             <td style="padding:8px 0; color:#777; font-weight:500;">Department</td>
-                            <td style="padding:8px 0; font-weight:600; color:#333;"><t t-esc="doc.department_id.name or '-'"/></td>
+                            <td style="padding:8px 0; font-weight:600; color:#333;">
+                                <t t-esc="doc.department_id.name or '-'"/>
+                            </td>
                         </tr>
                         <tr style="border-top: 1px solid #f0f0f0;">
                             <td style="padding:8px 0; color:#777; font-weight:500;">Joining Date</td>
-                            <td style="padding:8px 0; color:#333;"><span t-field="doc.contract_date_start"/></td>
+                            <td style="padding:8px 0; color:#333;">
+                                <span t-field="doc.contract_date_start"/>
+                            </td>
                             <td style="padding:8px 0; color:#777; font-weight:500;">Last Working Day</td>
                             <td style="padding:8px 0; font-weight:600;">
-                                <t t-if="doc.departure_date"><span t-field="doc.departure_date"/></t>
-                                <t t-else=""><span class="text-success" style="font-weight:bold;">Active</span></t>
+                                <t t-if="doc.departure_date">
+                                    <span t-field="doc.departure_date"/>
+                                </t>
+                                <t t-else="">
+                                    <span class="text-success" style="font-weight:bold;">Active</span>
+                                </t>
                             </td>
                         </tr>
                         <tr style="border-top: 1px solid #f0f0f0;">
@@ -69,7 +83,9 @@
                                 <t t-if="doc.is_nbr_approved">
                                     <span style="color:#2e7d32;">Approved</span>
                                 </t>
-                                <t t-else=""><span style="color:#c62828;">Non-Approved</span></t>
+                                <t t-else="">
+                                    <span style="color:#c62828;">Non-Approved</span>
+                                </t>
                             </td>
                         </tr>
                     </table>
@@ -103,9 +119,10 @@
                                 </td>
                             </tr>
                             <tr t-if="doc.gratuity_tax_amount > 0" style="border-bottom:1px solid #e0e0e0; background-color: #fff8f8;">
-                                <td style="padding:12px 15px; color:#c62828; font-weight: 500;">↳ Income Tax / TDS Deduction @ <t t-esc="doc.gratuity_tax_percent"/>%</td>
+                                <td style="padding:12px 15px; color:#c62828; font-weight: 500;">↳ Income Tax / TDS Deduction @ <t t-esc="doc.gratuity_tax_percent"/>
+%</td>
                                 <td style="padding:12px 15px; text-align:right; color:#c62828; font-weight: 600;">
-                                    (−) <span t-field="doc.gratuity_tax_amount" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/>
+                                    (−)                                    <span t-field="doc.gratuity_tax_amount" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/>
                                 </td>
                             </tr>
                             <tr style="background-color:#e8f5e9; font-size:15px; border-top:2px solid #2e7d32;">
@@ -123,7 +140,8 @@
                     <p style="margin:2px 0;">* Final settlement fund computed strictly in accordance with Section 27-28 of the Bangladesh Labor Act, 2006.</p>
                     <p style="margin:2px 0;">* Service history verification calculated using the statutory 180-day fraction rounding rule.</p>
                     <p t-if="doc.is_nbr_approved" style="margin:2px 0;">
-                        * Valid NBR Exemption applied up to BDT <t t-esc="'{:,.0f}'.format(doc.gratuity_exemption_limit)"/> as per the Income Tax Act.
+                        * Valid NBR Exemption applied up to BDT <t t-esc="'{:,.0f}'.format(doc.gratuity_exemption_limit)"/>
+ as per the Income Tax Act.
                     </p>
                 </div>
 
@@ -155,13 +173,14 @@
                             <t t-else="">This is a computer-generated statement and requires no physical seal.</t>
                         </div>
                         <div class="col-4 text-right" style="font-weight: 500;">
-                            Page <span class="page"/> of <span class="topage"/>
-                        </div>
+                            Page <span class="page"/>
+ of <span class="topage"/>
                     </div>
                 </div>
-
             </div>
-        </t>
-    </template>
+
+        </div>
+    </t>
+</template>
 
 </odoo>
