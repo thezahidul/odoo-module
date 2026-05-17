@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_hr_gratuity_settlement_list" model="ir.ui.view">
+            <field name="name">hr.gratuity.settlement.list</field>
+            <field name="model">hr.gratuity.settlement</field>
+            <field name="arch" type="xml">
+                <list string="Gratuity Settlements">
+                    <field name="name"/>
+                    <field name="employee_id"/>
+                    <field name="joining_date"/>
+                    <field name="last_working_day"/>
+                    <field name="net_payable" widget="monetary"/>
+                    <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'verify'" decoration-success="state == 'approve'"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_hr_gratuity_settlement_form" model="ir.ui.view">
+            <field name="name">hr.gratuity.settlement.form</field>
+            <field name="model">hr.gratuity.settlement</field>
+            <field name="arch" type="xml">
+                <form string="Gratuity Settlement">
+                    <header>
+                        <button name="action_verify" string="Verify" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                        <button name="action_approve" string="Approve" type="object" class="oe_highlight" invisible="state != 'verify'"/>
+                        <button name="action_cancel" string="Cancel" type="object" invisible="state not in ['draft', 'verify']"/>
+                        <button name="action_draft" string="Set to Draft" type="object" invisible="state != 'cancel'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,verify,approve"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1><field name="name"/></h1>
+                        </div>
+
+                        <group string="HR Policy &amp; Eligibility">
+                            <group>
+                                <field name="employee_id" readonly="state != 'draft'"/>
+                                <field name="joining_date" readonly="state != 'draft'"/>
+                                <field name="last_working_day" readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field name="gross_wage" readonly="state != 'draft'"/>
+                                <field name="currency_id" invisible="1"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+                        </group>
+
+                        <group string="Tax Configuration">
+                            <group>
+                                <field name="is_nbr_approved" widget="boolean_toggle" readonly="state != 'draft'"/>
+                                <field name="gratuity_exemption_limit" invisible="not is_nbr_approved" readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field name="gratuity_tax_percent" readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+
+                        <group string="Final Settlement" class="mt-4">
+                            <group>
+                                <field name="gratuity_amount" string="Total Gross Gratuity" decoration-bf="1" widget="monetary"/>
+                                <field name="taxable_amount" string="Taxable Portion" invisible="taxable_amount == 0" decoration-warning="1" widget="monetary"/>
+                            </group>
+                            <group>
+                                <field name="tax_deduction" string="TDS (Tax)" widget="monetary" decoration-danger="tax_deduction > 0"/>
+                                <field name="net_payable" string="Net Payout" decoration-success="1" decoration-bf="1" widget="monetary"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_hr_gratuity_settlement" model="ir.actions.act_window">
+            <field name="name">Gratuity Settlements</field>
+            <field name="res_model">hr.gratuity.settlement</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem id="menu_hr_gratuity_settlement"
+                  name="Gratuity Settlements"
+                  action="action_hr_gratuity_settlement"
+                  parent="hr.menu_hr_root"
+                  sequence="75"/>
+    </data>
+</odoo>
