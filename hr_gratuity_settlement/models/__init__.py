@@ -1,1 +1,1 @@
-from . import hr_gratuity
+from . import gratuity_settlement
