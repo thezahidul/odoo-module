@@ -10,13 +10,12 @@ import math
 class HrGratuityPolicy(models.Model):
     """
     গ্লোবাল বা কোম্পানিভিত্তিক গ্র্যাচুইটি পলিসি কনফিগারেশন মডেল।
-    এখানে একবার পলিসি সেট করে রাখলে গ্র্যাচুইটি ফর্মে অটোমেটিক সব রুলস লোড হবে।
     """
     _name = 'hr.gratuity.policy'
     _description = 'HR Gratuity Policy Configuration'
     _order = 'name asc'
 
-    name = fields.Char(string='Policy Name', required=True, help="e.g., Bangladesh Labor Law 2006, Global Policy")
+    name = fields.Char(string='Policy Name', required=True, help="e.g., Bangladesh Labor Law 2006")
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company, required=True)
     
     days_per_year_below_5 = fields.Integer(string='Days/Year (1–5 Years)', default=30)
@@ -29,6 +28,13 @@ class HrGratuityPolicy(models.Model):
         ('actual', 'Actual Fraction (No Rounding)'),
         ('floor', 'Complete Years Only (Ignore Months)')
     ], string='Rounding Policy', default='bd_law', required=True)
+
+    # ─── পলিসির ভেতরে ট্যাক্স সেটিংস ───
+    is_nbr_approved = fields.Boolean(string='NBR Approved?', default=True, help="If checked, tax exemption limit will apply.")
+    tax_exemption_limit = fields.Monetary(string='Tax Exemption Limit', default=25000000.0, currency_field='currency_id')
+    tax_rate = fields.Float(string='Tax Rate (%)', default=10.0, digits=(16, 2))
+    
+    currency_id = fields.Many2one('res.currency', string='Currency', related='company_id.currency_id', readonly=True)
 
     _sql_constraints = [
         ('company_policy_unique', 'unique(name, company_id)', 'Policy name must be unique per company!')
@@ -57,15 +63,8 @@ class HrGratuity(models.Model):
         ('cancelled', 'Cancelled'),
     ], string='Status', default='draft', tracking=True, copy=False)
 
-    # ─── Policy Selection (The Magic Field) ──────────────────────────────────
-    policy_id = fields.Many2one(
-        comodel_name='hr.gratuity.policy', 
-        string='Gratuity Policy', 
-        required=True,
-        tracking=True,
-        domain="[('company_id', '=', company_id)]",
-        help="Select the law/policy applicable for this calculation."
-    )
+    # ─── Policy Selection ────────────────────────────────────────────────────
+    policy_id = fields.Many2one('hr.gratuity.policy', string='Gratuity Policy', required=True, tracking=True, domain="[('company_id', '=', company_id)]")
 
     # ─── Service Period ──────────────────────────────────────────────────────
     joining_date = fields.Date(string='Joining Date', required=True, tracking=True)
@@ -79,20 +78,21 @@ class HrGratuity(models.Model):
     basic_percentage = fields.Float(string='Basic Salary Percentage (%)', default=60.0)
     basic_wage = fields.Monetary(string='Basic Wage', compute='_compute_basic_wage', store=True, currency_field='currency_id')
 
-    # ─── Technical Policy Fields (Fetched from Selected Policy) ──────────────
+    # ─── Related Configuration Fields (Fetched from Selected Policy) ─────────
     min_service_years = fields.Integer(string='Minimum Service Years', related='policy_id.min_service_years', readonly=True)
     days_per_year_below_5 = fields.Integer(string='Days/Year (1–5 Years)', related='policy_id.days_per_year_below_5', readonly=True)
     days_per_year_above_5 = fields.Integer(string='Days/Year (5+ Years)', related='policy_id.days_per_year_above_5', readonly=True)
     working_days_per_month = fields.Integer(string='Working Days/Month', related='policy_id.working_days_per_month', readonly=True)
     rounding_policy = fields.Selection(related='policy_id.rounding_policy', readonly=True)
 
+    # ─── Related Tax Fields (Fetched from Selected Policy) ───────────────────
+    is_nbr_approved = fields.Boolean(string='NBR Approved?', related='policy_id.is_nbr_approved', readonly=True, store=True)
+    tax_exemption_limit = fields.Monetary(string='Tax Exemption Limit', related='policy_id.tax_exemption_limit', readonly=True, store=True)
+    tax_rate = fields.Float(string='Tax Rate (%)', related='policy_id.tax_rate', readonly=True, store=True)
+
     total_gratuity = fields.Monetary(string='Total Gratuity', compute='_compute_gratuity', store=True, currency_field='currency_id', tracking=True)
     gratuity_line_ids = fields.One2many('hr.gratuity.line', 'gratuity_id', string='Calculation Lines', readonly=True)
 
-    # ─── Tax ─────────────────────────────────────────────────────────────────
-    is_nbr_approved = fields.Boolean(string='NBR Approved?', default=True)
-    tax_exemption_limit = fields.Monetary(string='Tax Exemption Limit', default=25000000.0, currency_field='currency_id')
-    tax_rate = fields.Float(string='Tax Rate (%)', default=10.0, digits=(16, 2))
     taxable_portion = fields.Monetary(string='Taxable Portion', compute='_compute_tax', store=True, currency_field='currency_id')
     tds_amount = fields.Monetary(string='TDS (Tax Amount)', compute='_compute_tax', store=True, currency_field='currency_id', tracking=True)
     net_payout = fields.Monetary(string='Net Payment', compute='_compute_tax', store=True, currency_field='currency_id', tracking=True)
@@ -158,7 +158,6 @@ class HrGratuity(models.Model):
         raw_years = math.floor(self.service_years)
         fractional = self.service_years - raw_years
         
-        # পলিসি কনফিগারেশন বেজড ডাইনামিক রাউন্ডিং এবং স্ল্যাব ক্যালকুলেশন
         if self.rounding_policy == 'bd_law':
             if fractional >= 0.5:
                 final_payable_years = raw_years + 1
@@ -248,7 +247,6 @@ class HrGratuity(models.Model):
     @api.onchange('employee_id')
     def _onchange_employee_id(self):
         if self.employee_id:
-            # অটোমেটিক কোম্পানির সাথে ডিফাইন করা প্রথম পলিসিটি সিলেক্ট করে দেবে
             default_policy = self.env['hr.gratuity.policy'].search([
                 ('company_id', '=', self.company_id.id)
             ], limit=1)

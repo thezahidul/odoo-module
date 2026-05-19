@@ -1,67 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <record id="view_hr_gratuity_policy_list" model="ir.ui.view">
+        <field name="name">hr.gratuity.policy.list</field>
+        <field name="model">hr.gratuity.policy</field>
+        <field name="arch" type="xml">
+            <list string="Gratuity Policies">
+                <field name="name"/>
+                <field name="working_days_per_month"/>
+                <field name="min_service_years"/>
+                <field name="rounding_policy"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_gratuity_policy_form" model="ir.ui.view">
+        <field name="name">hr.gratuity.policy.form</field>
+        <field name="model">hr.gratuity.policy</field>
+        <field name="arch" type="xml">
+            <form string="Gratuity Policy Configuration">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Policy Name"/>
+                        <h1><field name="name" placeholder="e.g., Bangladesh Labor Law 2006"/></h1>
+                    </div>
+                    <group string="Service &amp; Day Calculations">
+                        <group>
+                            <field name="working_days_per_month"/>
+                            <field name="min_service_years"/>
+                            <field name="rounding_policy"/>
+                        </group>
+                        <group>
+                            <field name="days_per_year_below_5"/>
+                            <field name="days_per_year_above_5"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group string="Tax &amp; Regulatory Rules">
+                        <group>
+                            <field name="is_nbr_approved"/>
+                            <field name="tax_exemption_limit" invisible="not is_nbr_approved"/>
+                        </group>
+                        <group>
+                            <field name="tax_rate"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
     <record id="view_hr_gratuity_form" model="ir.ui.view">
         <field name="name">hr.gratuity.form</field>
         <field name="model">hr.gratuity</field>
         <field name="arch" type="xml">
             <form string="Gratuity — Bangladesh Labor Law">
-
                 <header>
-                    <button name="action_confirm" string="Confirm"
-                            type="object" class="btn-primary"
-                            invisible="state != 'draft'"/>
-                    <button name="action_approve" string="Approve"
-                            type="object" class="btn-primary"
-                            invisible="state != 'confirmed'"
-                            groups="hr.group_hr_manager"/>
-                    <button name="action_mark_paid" string="Mark as Paid"
-                            type="object" class="btn-success"
-                            invisible="state != 'approved'"/>
-                    <button name="action_cancel" string="Cancel"
-                            type="object"
-                            invisible="state in ('paid', 'cancelled')"
-                            confirm="Are you sure you want to cancel this record?"/>
-                    <button name="action_reset_draft" string="Reset to Draft"
-                            type="object"
-                            invisible="state != 'cancelled'"/>
-                    <button name="action_print_settlement_report"
-                            string="Print Settlement Report"
-                            type="object"
-                            invisible="state == 'draft'"
-                            class="btn-secondary"/>
-                    <field name="state" widget="statusbar"
-                           statusbar_visible="draft,confirmed,approved,paid"/>
+                    <button name="action_confirm" string="Confirm" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Approve" type="object" class="btn-primary" invisible="state != 'confirmed'" groups="hr.group_hr_manager"/>
+                    <button name="action_mark_paid" string="Mark as Paid" type="object" class="btn-success" invisible="state != 'approved'"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state in ('paid', 'cancelled')" confirm="Are you sure you want to cancel this record?"/>
+                    <button name="action_reset_draft" string="Reset to Draft" type="object" invisible="state != 'cancelled'"/>
+                    <button name="action_print_settlement_report" string="Print Settlement Report" type="object" invisible="state == 'draft'" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,approved,paid"/>
                 </header>
 
                 <sheet>
                     <div class="oe_title">
-                        <h1>
-                            <field name="name" readonly="1"/>
-                        </h1>
+                        <h1><field name="name" readonly="1"/></h1>
                     </div>
 
                     <group string="Employee Information">
                         <group>
-                            <field name="employee_id"
-                                   readonly="state != 'draft'"
-                                   options="{'no_create': True}"/>
+                            <field name="employee_id" readonly="state != 'draft'" options="{'no_create': True}"/>
                             <field name="department_id"/>
                             <field name="job_id"/>
                         </group>
                         <group>
                             <field name="company_id" readonly="1"/>
-                            <field name="calculation_date"
-                                   readonly="state != 'draft'"/>
+                            <field name="calculation_date" readonly="state != 'draft'"/>
                         </group>
                     </group>
 
                     <group string="Service Information">
                         <group>
-                            <field name="joining_date"
-                                   readonly="state != 'draft'"/>
-                            <field name="departure_date"
-                                   readonly="state != 'draft'"/>
+                            <field name="joining_date" readonly="state != 'draft'"/>
+                            <field name="departure_date" readonly="state != 'draft'"/>
                         </group>
                         <group>
                             <field name="service_years_display"/>
@@ -71,14 +96,9 @@
 
                     <group string="Salary Information">
                         <group>
-                            <field name="gross_wage"
-                                   readonly="state != 'draft'"
-                                   widget="monetary"
-                                   options="{'currency_field': 'currency_id'}"/>
-                            <field name="basic_percentage"
-                                   readonly="state != 'draft'"/>
-                            <field name="basic_wage" widget="monetary"
-                                   options="{'currency_field': 'currency_id'}"/>
+                            <field name="gross_wage" readonly="state != 'draft'" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="basic_percentage" readonly="state != 'draft'"/>
+                            <field name="basic_wage" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         </group>
                         <group>
                             <field name="policy_id" options="{'no_create': True}" readonly="state != 'draft'"/>
@@ -108,41 +128,30 @@
                                     <field name="amount" sum="Total"/>
                                 </list>
                             </field>
-
-                            <group class="oe_subtotal_footer oe_right"
-                                   col="2" colspan="2">
-                                <field name="total_gratuity"
-                                       string="Total Gratuity"
-                                       class="oe_subtotal_footer_separator"/>
+                            <group class="oe_subtotal_footer oe_right" col="2" colspan="2">
+                                <field name="total_gratuity" string="Total Gratuity" class="oe_subtotal_footer_separator"/>
                             </group>
                         </page>
 
                         <page string="Tax / TDS Calculation">
                             <group>
-                                <group>
+                                <group string="Policy Tax Rules">
                                     <field name="is_nbr_approved"/>
-                                    <field name="tax_exemption_limit"
-                                           invisible="not is_nbr_approved"
-                                           readonly="state != 'draft'"/>
-                                    <field name="tax_rate"
-                                           readonly="state != 'draft'"/>
+                                    <field name="tax_exemption_limit" invisible="not is_nbr_approved"/>
+                                    <field name="tax_rate"/>
                                  </group>
-                                 <group>
+                                 <group string="Tax Breakdown">
                                     <field name="taxable_portion"/>
                                     <field name="tds_amount"/>
-                                    <field name="net_payout"
-                                           class="oe_subtotal_footer_separator"/>
+                                    <field name="net_payout" class="oe_subtotal_footer_separator"/>
                                 </group>
                             </group>
                         </page>
 
-                        <page string="Payment Information"
-                              invisible="state not in ('approved', 'paid')">
+                        <page string="Payment Information" invisible="state not in ('approved', 'paid')">
                             <group>
-                                <field name="payment_date"
-                                       readonly="state == 'paid'"/>
-                                <field name="payment_reference"
-                                       readonly="state == 'paid'"/>
+                                <field name="payment_date" readonly="state == 'paid'"/>
+                                <field name="payment_reference" readonly="state == 'paid'"/>
                             </group>
                         </page>
 
@@ -151,7 +160,6 @@
                         </page>
                     </notebook>
                 </sheet>
-
                 <chatter/>
             </form>
         </field>
@@ -161,11 +169,7 @@
         <field name="name">hr.gratuity.list</field>
         <field name="model">hr.gratuity</field>
         <field name="arch" type="xml">
-            <list string="Gratuity Records"
-                  decoration-success="state == 'paid'"
-                  decoration-info="state == 'approved'"
-                  decoration-warning="state == 'confirmed'"
-                  decoration-muted="state == 'cancelled'">
+            <list string="Gratuity Records" decoration-success="state == 'paid'" decoration-info="state == 'approved'" decoration-warning="state == 'confirmed'" decoration-muted="state == 'cancelled'">
                 <field name="name"/>
                 <field name="employee_id"/>
                 <field name="department_id"/>
@@ -175,10 +179,7 @@
                 <field name="total_gratuity"/>
                 <field name="tds_amount"/>
                 <field name="net_payout"/>
-                <field name="state" widget="badge"
-                       decoration-success="state == 'paid'"
-                       decoration-info="state == 'approved'"
-                       decoration-warning="state == 'confirmed'"/>
+                <field name="state" widget="badge" decoration-success="state == 'paid'" decoration-info="state == 'approved'" decoration-warning="state == 'confirmed'"/>
             </list>
         </field>
     </record>
@@ -189,12 +190,8 @@
         <field name="view_mode">list,form</field>
         <field name="context">{}</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Create your first Gratuity Record
-            </p>
-            <p>
-                Manage and process corporate employee gratuity settlements in compliance with Bangladesh Labor Law 2006.
-            </p>
+            <p class="o_view_nocontent_smiling_face">Create your first Gratuity Record</p>
+            <p>Manage and process corporate employee gratuity settlements in compliance with Bangladesh Labor Law 2006.</p>
         </field>
     </record>
 
