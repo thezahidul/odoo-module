@@ -7,237 +7,102 @@ from datetime import date
 import math
 
 
-class HrGratuity(models.Model):
+class HrGratuityPolicy(models.Model):
     """
-    Gratuity Management according to Bangladesh Labor Law 2006.
-    This is an independent model completely separated from the hr.employee model.
+    গ্লোবাল বা কোম্পানিভিত্তিক গ্র্যাচুইটি পলিসি কনফিগারেশন মডেল।
+    এখানে একবার পলিসি সেট করে রাখলে গ্র্যাচুইটি ফর্মে অটোমেটিক সব রুলস লোড হবে।
+    """
+    _name = 'hr.gratuity.policy'
+    _description = 'HR Gratuity Policy Configuration'
+    _order = 'name asc'
 
-    BD Labor Law Formula:
-      - 1–5 Years  : (Basic ÷ 26) × 30 days per year
-      - 5+ Years   : (Basic ÷ 26) × 45 days per year
-    """
+    name = fields.Char(string='Policy Name', required=True, help="e.g., Bangladesh Labor Law 2006, Global Policy")
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company, required=True)
+    
+    days_per_year_below_5 = fields.Integer(string='Days/Year (1–5 Years)', default=30)
+    days_per_year_above_5 = fields.Integer(string='Days/Year (5+ Years)', default=45)
+    working_days_per_month = fields.Integer(string='Working Days/Month', default=26)
+    min_service_years = fields.Integer(string='Minimum Service Years', default=1)
+    
+    rounding_policy = fields.Selection([
+        ('bd_law', 'BD Law (>= 6 Months = 1 Year)'),
+        ('actual', 'Actual Fraction (No Rounding)'),
+        ('floor', 'Complete Years Only (Ignore Months)')
+    ], string='Rounding Policy', default='bd_law', required=True)
+
+    _sql_constraints = [
+        ('company_policy_unique', 'unique(name, company_id)', 'Policy name must be unique per company!')
+    ]
+
+
+class HrGratuity(models.Model):
     _name = 'hr.gratuity'
-    _description = 'HR Gratuity - Bangladesh Labor Law'
+    _description = 'HR Gratuity Management'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'create_date desc'
     _rec_name = 'name'
 
     # ─── Basic Info ──────────────────────────────────────────────────────────
+    name = fields.Char(string='Reference', required=True, copy=False, readonly=True, default=lambda self: _('New'), tracking=True)
+    employee_id = fields.Many2one('hr.employee', string='Employee', required=True, ondelete='restrict', tracking=True, index=True)
+    department_id = fields.Many2one('hr.department', string='Department', related='employee_id.department_id', store=True, readonly=True)
+    job_id = fields.Many2one('hr.job', string='Job Position', related='employee_id.job_id', store=True, readonly=True)
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company, required=True, readonly=True)
+    currency_id = fields.Many2one('res.currency', string='Currency', related='company_id.currency_id', readonly=True)
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('confirmed', 'Confirmed'),
+        ('approved', 'Approved'),
+        ('paid', 'Paid'),
+        ('cancelled', 'Cancelled'),
+    ], string='Status', default='draft', tracking=True, copy=False)
 
-    name = fields.Char(
-        string='Reference',
+    # ─── Policy Selection (The Magic Field) ──────────────────────────────────
+    policy_id = fields.Many2one(
+        comodel_name='hr.gratuity.policy', 
+        string='Gratuity Policy', 
         required=True,
-        copy=False,
-        readonly=True,
-        default=lambda self: _('New'),
         tracking=True,
-    )
-
-    employee_id = fields.Many2one(
-        comodel_name='hr.employee',
-        string='Employee',
-        required=True,
-        ondelete='restrict',
-        tracking=True,
-        index=True,
-    )
-
-    department_id = fields.Many2one(
-        comodel_name='hr.department',
-        string='Department',
-        related='employee_id.department_id',
-        store=True,
-        readonly=True,
-    )
-
-    job_id = fields.Many2one(
-        comodel_name='hr.job',
-        string='Job Position',
-        related='employee_id.job_id',
-        store=True,
-        readonly=True,
-    )
-
-    company_id = fields.Many2one(
-        comodel_name='res.company',
-        string='Company',
-        default=lambda self: self.env.company,
-        required=True,
-        readonly=True,
-    )
-
-    currency_id = fields.Many2one(
-        comodel_name='res.currency',
-        string='Currency',
-        related='company_id.currency_id',
-        readonly=True,
-    )
-
-    state = fields.Selection(
-        selection=[
-            ('draft', 'Draft'),
-            ('confirmed', 'Confirmed'),
-            ('approved', 'Approved'),
-            ('paid', 'Paid'),
-            ('cancelled', 'Cancelled'),
-        ],
-        string='Status',
-        default='draft',
-        tracking=True,
-        copy=False,
+        domain="[('company_id', '=', company_id)]",
+        help="Select the law/policy applicable for this calculation."
     )
 
     # ─── Service Period ──────────────────────────────────────────────────────
-
-    joining_date = fields.Date(
-        string='Joining Date',
-        required=True,
-        tracking=True,
-    )
-
-    departure_date = fields.Date(
-        string='Departure/Resignation Date',
-        tracking=True,
-    )
-
-    calculation_date = fields.Date(
-        string='Calculation Date',
-        default=fields.Date.today,
-        required=True,
-    )
-
-    service_years = fields.Float(
-        string='Service Years',
-        compute='_compute_service_years',
-        store=True,
-        digits=(16, 4),
-    )
-
-    service_years_display = fields.Char(
-        string='Service Duration',
-        compute='_compute_service_years',
-        store=True,
-    )
-
-    min_service_years = fields.Integer(
-        string='Minimum Service Years',
-        default=1,
-    )
+    joining_date = fields.Date(string='Joining Date', required=True, tracking=True)
+    departure_date = fields.Date(string='Departure/Resignation Date', tracking=True)
+    calculation_date = fields.Date(string='Calculation Date', default=fields.Date.today, required=True)
+    service_years = fields.Float(string='Service Years', compute='_compute_service_years', store=True, digits=(16, 4))
+    service_years_display = fields.Char(string='Service Duration', compute='_compute_service_years', store=True)
 
     # ─── Salary ──────────────────────────────────────────────────────────────
+    gross_wage = fields.Monetary(string='Gross Wage', required=True, currency_field='currency_id', tracking=True)
+    basic_percentage = fields.Float(string='Basic Salary Percentage (%)', default=60.0)
+    basic_wage = fields.Monetary(string='Basic Wage', compute='_compute_basic_wage', store=True, currency_field='currency_id')
 
-    gross_wage = fields.Monetary(
-        string='Gross Wage',
-        required=True,
-        currency_field='currency_id',
-        tracking=True,
-    )
+    # ─── Technical Policy Fields (Fetched from Selected Policy) ──────────────
+    min_service_years = fields.Integer(string='Minimum Service Years', related='policy_id.min_service_years', readonly=True)
+    days_per_year_below_5 = fields.Integer(string='Days/Year (1–5 Years)', related='policy_id.days_per_year_below_5', readonly=True)
+    days_per_year_above_5 = fields.Integer(string='Days/Year (5+ Years)', related='policy_id.days_per_year_above_5', readonly=True)
+    working_days_per_month = fields.Integer(string='Working Days/Month', related='policy_id.working_days_per_month', readonly=True)
+    rounding_policy = fields.Selection(related='policy_id.rounding_policy', readonly=True)
 
-    basic_percentage = fields.Float(
-        string='Basic Salary Percentage (%)',
-        default=60.0,
-    )
-
-    basic_wage = fields.Monetary(
-        string='Basic Wage',
-        compute='_compute_basic_wage',
-        store=True,
-        currency_field='currency_id',
-    )
-
-    # ─── Calculation ─────────────────────────────────────────────────────────
-
-    calculation_type = fields.Selection(
-        selection=[
-            ('bd_labor_law', 'BD Labor Law 2006'),
-        ],
-        string='Calculation Method',
-        default='bd_labor_law',
-        required=True,
-    )
-
-    days_per_year_below_5 = fields.Integer(
-        string='Days/Year (1–5 Years)',
-        default=30,
-        help='BD Labor Law: 30 days/year for the first 5 years',
-    )
-
-    days_per_year_above_5 = fields.Integer(
-        string='Days/Year (5+ Years)',
-        default=45,
-        help='BD Labor Law: 45 days/year for service extending past 5 years',
-    )
-
-    working_days_per_month = fields.Integer(
-        string='Working Days/Month',
-        default=26,
-    )
-
-    total_gratuity = fields.Monetary(
-        string='Total Gratuity',
-        compute='_compute_gratuity',
-        store=True,
-        currency_field='currency_id',
-        tracking=True,
-    )
-
-    gratuity_line_ids = fields.One2many(
-        comodel_name='hr.gratuity.line',
-        inverse_name='gratuity_id',
-        string='Calculation Lines',
-        readonly=True,
-    )
+    total_gratuity = fields.Monetary(string='Total Gratuity', compute='_compute_gratuity', store=True, currency_field='currency_id', tracking=True)
+    gratuity_line_ids = fields.One2many('hr.gratuity.line', 'gratuity_id', string='Calculation Lines', readonly=True)
 
     # ─── Tax ─────────────────────────────────────────────────────────────────
+    is_nbr_approved = fields.Boolean(string='NBR Approved?', default=True)
+    tax_exemption_limit = fields.Monetary(string='Tax Exemption Limit', default=25000000.0, currency_field='currency_id')
+    tax_rate = fields.Float(string='Tax Rate (%)', default=10.0, digits=(16, 2))
+    taxable_portion = fields.Monetary(string='Taxable Portion', compute='_compute_tax', store=True, currency_field='currency_id')
+    tds_amount = fields.Monetary(string='TDS (Tax Amount)', compute='_compute_tax', store=True, currency_field='currency_id', tracking=True)
+    net_payout = fields.Monetary(string='Net Payment', compute='_compute_tax', store=True, currency_field='currency_id', tracking=True)
 
-    is_nbr_approved = fields.Boolean(
-        string='NBR Approved?',
-        default=True,
-    )
-
-    tax_exemption_limit = fields.Monetary(
-        string='Tax Exemption Limit',
-        default=25000000.0,
-        currency_field='currency_id',
-    )
-
-    tax_rate = fields.Float(
-        string='Tax Rate (%)',
-        default=10.0,
-        digits=(16, 2),
-    )
-
-    taxable_portion = fields.Monetary(
-        string='Taxable Portion',
-        compute='_compute_tax',
-        store=True,
-        currency_field='currency_id',
-    )
-
-    tds_amount = fields.Monetary(
-        string='TDS (Tax Amount)',
-        compute='_compute_tax',
-        store=True,
-        currency_field='currency_id',
-        tracking=True,
-    )
-
-    net_payout = fields.Monetary(
-        string='Net Payment',
-        compute='_compute_tax',
-        store=True,
-        currency_field='currency_id',
-        tracking=True,
-    )
-
-    # ─── Payment ─────────────────────────────────────────────────────────────
-
+    # ─── Payment & Notes ─────────────────────────────────────────────────────
     payment_date = fields.Date(string='Payment Date', tracking=True)
     payment_reference = fields.Char(string='Payment Reference', tracking=True)
     notes = fields.Text(string='Notes')
 
     # ─── Computes ────────────────────────────────────────────────────────────
-
     @api.depends('joining_date', 'departure_date', 'calculation_date')
     def _compute_service_years(self):
         for rec in self:
@@ -245,8 +110,16 @@ class HrGratuity(models.Model):
                 rec.service_years = 0.0
                 rec.service_years_display = '0 Years'
                 continue
-            end_date = rec.departure_date or rec.calculation_date or date.today()
-            delta = relativedelta(end_date, rec.joining_date)
+            
+            joining_date = fields.Date.from_string(rec.joining_date)
+            end_date = fields.Date.from_string(rec.departure_date or rec.calculation_date or date.today())
+            
+            if joining_date > end_date:
+                rec.service_years = 0.0
+                rec.service_years_display = '0 Years'
+                continue
+
+            delta = relativedelta(end_date, joining_date)
             total_months = delta.years * 12 + delta.months
             rec.service_years = round(total_months / 12, 4)
             
@@ -262,19 +135,13 @@ class HrGratuity(models.Model):
         for rec in self:
             rec.basic_wage = rec.gross_wage * (rec.basic_percentage / 100)
 
-    @api.depends(
-        'service_years', 'basic_wage', 'working_days_per_month',
-        'days_per_year_below_5', 'days_per_year_above_5',
-        'min_service_years',
-    )
+    @api.depends('service_years', 'basic_wage', 'policy_id')
     def _compute_gratuity(self):
         for rec in self:
-            # যদি রেকর্ডটি ডাটাবেজে অলরেডি সেভ করা থাকে, তবেই পুরাতন লাইন ডিলিট করবে
             if isinstance(rec.id, int):
                 rec.gratuity_line_ids.unlink()
             
-            # সার্ভিস পিরিয়ড কম হলে বা রেকর্ডটির আইডি এখনও না থাকলে (নতুন হলে) ক্যালকুলেশন স্কিপ করবে
-            if rec.service_years < rec.min_service_years or not rec.id:
+            if not rec.policy_id or rec.service_years < rec.min_service_years or not rec.id:
                 rec.total_gratuity = 0.0
                 continue
                 
@@ -284,56 +151,86 @@ class HrGratuity(models.Model):
         self.ensure_one()
         if not self.working_days_per_month:
             return 0.0
+        
         daily_wage = self.basic_wage / self.working_days_per_month
-        total = 0.0
         lines = []
-        years = math.floor(self.service_years)
-        fractional = self.service_years - years
+        
+        raw_years = math.floor(self.service_years)
+        fractional = self.service_years - raw_years
+        
+        # পলিসি কনফিগারেশন বেজড ডাইনামিক রাউন্ডিং এবং স্ল্যাব ক্যালকুলেশন
+        if self.rounding_policy == 'bd_law':
+            if fractional >= 0.5:
+                final_payable_years = raw_years + 1
+                duration_msg = f"{raw_years} Years + Fractional Year (>= 6 Months rounded up)"
+            else:
+                final_payable_years = raw_years
+                duration_msg = f"{raw_years} Years (Fractional Year < 6 Months ignored)"
+            
+            if final_payable_years <= 0:
+                return 0.0
 
-        # 1–5 Years: 30 days/year
-        below_5 = min(years, 5)
-        if below_5 > 0:
-            amount = daily_wage * self.days_per_year_below_5 * below_5
-            total += amount
+            if final_payable_years > 5:
+                days_per_year = self.days_per_year_above_5
+                desc = f"Policy [{self.policy_id.name}]: {duration_msg} at {days_per_year} days/year"
+            else:
+                days_per_year = self.days_per_year_below_5
+                desc = f"Policy [{self.policy_id.name}]: {duration_msg} at {days_per_year} days/year"
+                
+            amount = daily_wage * days_per_year * final_payable_years
             lines.append({
                 'gratuity_id': self.id,
-                'description': f'First {below_5} Years ({self.days_per_year_below_5} days/year)',
-                'years': below_5,
-                'days_per_year': self.days_per_year_below_5,
+                'description': desc,
+                'years': final_payable_years,
+                'days_per_year': days_per_year,
                 'daily_wage': daily_wage,
                 'amount': amount,
             })
 
-        # 5+ Years: 45 days/year
-        above_5 = max(years - 5, 0)
-        if above_5 > 0:
-            amount = daily_wage * self.days_per_year_above_5 * above_5
-            total += amount
+        elif self.rounding_policy == 'floor':
+            final_payable_years = raw_years
+            days_per_year = self.days_per_year_above_5 if final_payable_years > 5 else self.days_per_year_below_5
+            amount = daily_wage * days_per_year * final_payable_years
             lines.append({
                 'gratuity_id': self.id,
-                'description': f'Next {above_5} Years ({self.days_per_year_above_5} days/year)',
-                'years': above_5,
-                'days_per_year': self.days_per_year_above_5,
+                'description': f"Policy [{self.policy_id.name}]: Complete years only ({final_payable_years} Years)",
+                'years': final_payable_years,
+                'days_per_year': days_per_year,
                 'daily_wage': daily_wage,
                 'amount': amount,
             })
 
-        # Fractional year (6+ months evaluated proportionally)
-        if fractional >= 0.5:
-            days = self.days_per_year_above_5 if years >= 5 else self.days_per_year_below_5
-            amount = daily_wage * days * fractional
-            total += amount
-            lines.append({
-                'gratuity_id': self.id,
-                'description': f'Fractional Portion ({fractional:.2f} Years)',
-                'years': fractional,
-                'days_per_year': days,
-                'daily_wage': daily_wage,
-                'amount': amount,
-            })
+        elif self.rounding_policy == 'actual':
+            total_amount = 0.0
+            below_5_part = min(self.service_years, 5.0)
+            if below_5_part > 0:
+                amt_1 = daily_wage * self.days_per_year_below_5 * below_5_part
+                total_amount += amt_1
+                lines.append({
+                    'gratuity_id': self.id,
+                    'description': f"Policy [{self.policy_id.name}]: Pro-rata (1-5 Years part)",
+                    'years': below_5_part,
+                    'days_per_year': self.days_per_year_below_5,
+                    'daily_wage': daily_wage,
+                    'amount': amt_1,
+                })
+            
+            above_5_part = max(self.service_years - 5.0, 0.0)
+            if above_5_part > 0:
+                amt_2 = daily_wage * self.days_per_year_above_5 * above_5_part
+                total_amount += amt_2
+                lines.append({
+                    'gratuity_id': self.id,
+                    'description': f"Policy [{self.policy_id.name}]: Pro-rata (5+ Years part)",
+                    'years': above_5_part,
+                    'days_per_year': self.days_per_year_above_5,
+                    'daily_wage': daily_wage,
+                    'amount': amt_2,
+                })
+            amount = total_amount
 
         self.env['hr.gratuity.line'].create(lines)
-        return round(total, 2)
+        return round(amount, 2)
 
     @api.depends('total_gratuity', 'is_nbr_approved', 'tax_exemption_limit', 'tax_rate')
     def _compute_tax(self):
@@ -348,21 +245,30 @@ class HrGratuity(models.Model):
             rec.net_payout = round(rec.total_gratuity - tds, 2)
 
     # ─── Onchange ────────────────────────────────────────────────────────────
-
     @api.onchange('employee_id')
     def _onchange_employee_id(self):
         if self.employee_id:
-            self.joining_date = self.employee_id.date_start
-            # Fetch wage data from contract if hr_payroll is installed
-            if 'hr.contract' in self.env:
-                contract = self.env['hr.contract'].search([
-                    ('employee_id', '=', self.employee_id.id),
-                    ('state', '=', 'open'),
-                ], limit=1)
-                if contract:
-                    self.gross_wage = contract.wage
+            # অটোমেটিক কোম্পানির সাথে ডিফাইন করা প্রথম পলিসিটি সিলেক্ট করে দেবে
+            default_policy = self.env['hr.gratuity.policy'].search([
+                ('company_id', '=', self.company_id.id)
+            ], limit=1)
+            if default_policy:
+                self.policy_id = default_policy
 
-    # ─── Sequence ────────────────────────────────────────────────────────────
+            if hasattr(self.employee_id, 'date_start') and self.employee_id.date_start:
+                self.joining_date = self.employee_id.date_start
+            elif hasattr(self.employee_id, 'contract_id') and self.employee_id.contract_id.date_start:
+                self.joining_date = self.employee_id.contract_id.date_start
+            else:
+                self.joining_date = fields.Date.today()
+
+            if hasattr(self.employee_id, 'wage') and self.employee_id.wage:
+                self.gross_wage = self.employee_id.wage
+            elif hasattr(self.employee_id, 'contract_id') and self.employee_id.contract_id.wage:
+                self.gross_wage = self.employee_id.contract_id.wage
+        else:
+            self.gross_wage = 0.0
+            self.joining_date = False
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -370,8 +276,6 @@ class HrGratuity(models.Model):
             if vals.get('name', _('New')) == _('New'):
                 vals['name'] = self.env['ir.sequence'].next_by_code('hr.gratuity') or _('New')
         return super().create(vals_list)
-
-    # ─── Constraints ─────────────────────────────────────────────────────────
 
     @api.constrains('joining_date', 'departure_date')
     def _check_dates(self):
@@ -389,21 +293,15 @@ class HrGratuity(models.Model):
                 ('id', '!=', rec.id),
             ])
             if existing:
-                raise ValidationError(_(
-                    'An active Gratuity record already exists for this employee!'
-                ))
-
-    # ─── State Actions ────────────────────────────────────────────────────────
+                raise ValidationError(_('An active Gratuity record already exists for this employee!'))
 
     def action_confirm(self):
         for rec in self:
             if rec.service_years < rec.min_service_years:
                 raise UserError(_(
                     f"The employee's service length is only {rec.service_years:.2f} years. "
-                    f"A minimum of {rec.min_service_years} years is required to qualify for Gratuity."
+                    f"A minimum of {rec.min_service_years} years is required to qualify under [{rec.policy_id.name}]."
                 ))
-            
-            # কনফার্ম করার সময় ডাটাবেজে ID নিশ্চিত থাকে, তাই এখানে ক্যালকুলেশন কল করে দেওয়া নিরাপদ
             rec.total_gratuity = rec._calculate_bd_labor_law()
             rec.state = 'confirmed'
 
@@ -426,9 +324,7 @@ class HrGratuity(models.Model):
         self.write({'state': 'draft'})
 
     def action_print_settlement_report(self):
-        return self.env.ref(
-            'hr_gratuity_bd.action_report_gratuity_settlement'
-        ).report_action(self)
+        return self.env.ref('hr_gratuity_bd.action_report_gratuity_settlement').report_action(self)
 
 
 class HrGratuityLine(models.Model):
@@ -436,12 +332,7 @@ class HrGratuityLine(models.Model):
     _description = 'Gratuity Calculation Line'
     _order = 'id asc'
 
-    gratuity_id = fields.Many2one(
-        comodel_name='hr.gratuity',
-        string='Gratuity',
-        required=True,
-        ondelete='cascade',
-    )
+    gratuity_id = fields.Many2one('hr.gratuity', string='Gratuity', required=True, ondelete='cascade')
     description = fields.Char(string='Description', required=True)
     years = fields.Float(string='Years', digits=(16, 4))
     days_per_year = fields.Integer(string='Days/Year')

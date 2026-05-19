@@ -62,8 +62,6 @@
                                    readonly="state != 'draft'"/>
                             <field name="departure_date"
                                    readonly="state != 'draft'"/>
-                            <field name="min_service_years"
-                                   readonly="state != 'draft'"/>
                         </group>
                         <group>
                             <field name="service_years_display"/>
@@ -83,22 +81,19 @@
                                    options="{'currency_field': 'currency_id'}"/>
                         </group>
                         <group>
-                            <field name="calculation_type"
-                                   readonly="state != 'draft'"/>
-                            <field name="working_days_per_month"
-                                   readonly="state != 'draft'"/>
+                            <field name="policy_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                            <field name="working_days_per_month"/>
                         </group>
                     </group>
 
-                    <group string="BD Labor Law Configuration"
-                           invisible="calculation_type != 'bd_labor_law'">
+                    <group string="Active Policy Configuration Rules">
                         <group>
-                            <field name="days_per_year_below_5"
-                                   readonly="state != 'draft'"/>
+                            <field name="rounding_policy"/>
+                            <field name="min_service_years"/>
                         </group>
                         <group>
-                            <field name="days_per_year_above_5"
-                                   readonly="state != 'draft'"/>
+                            <field name="days_per_year_below_5"/>
+                            <field name="days_per_year_above_5"/>
                         </group>
                     </group>
 
