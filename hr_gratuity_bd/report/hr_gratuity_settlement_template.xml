@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<template id="report_gratuity_settlement">
+    <t t-call="web.html_container">
+        <t t-foreach="docs" t-as="doc">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <style>
+                        .gratuity-header { text-align: center; margin-bottom: 20px; }
+                        .gratuity-title { font-size: 18pt; font-weight: bold; color: #2c3e50; }
+                        .gratuity-subtitle { font-size: 11pt; color: #7f8c8d; margin-top: 4px; }
+                        .info-table { width: 100%; margin-bottom: 15px; }
+                        .info-table td { padding: 4px 8px; vertical-align: top; }
+                        .info-table .label { font-weight: bold; color: #555; width: 35%; }
+                        .section-title {
+                            background-color: #2c3e50;
+                            color: white;
+                            padding: 6px 12px;
+                            font-weight: bold;
+                            margin: 15px 0 8px;
+                            border-radius: 3px;
+                        }
+                        .calc-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+                        .calc-table th {
+                            background-color: #3498db;
+                            color: white;
+                            padding: 7px 10px;
+                            text-align: left;
+                            font-size: 10pt;
+                        }
+                        .calc-table td {
+                            padding: 6px 10px;
+                            border-bottom: 1px solid #ecf0f1;
+                            font-size: 10pt;
+                        }
+                        .calc-table tr:nth-child(even) { background-color: #f9f9f9; }
+                        .total-row td {
+                            font-weight: bold;
+                            background-color: #ebf5fb !important;
+                            border-top: 2px solid #3498db;
+                        }
+                        .summary-box {
+                            border: 2px solid #2c3e50;
+                            border-radius: 5px;
+                            padding: 12px 20px;
+                            margin-top: 15px;
+                        }
+                        .summary-row {
+                            display: flex;
+                            justify-content: space-between;
+                            padding: 5px 0;
+                            border-bottom: 1px solid #ecf0f1;
+                            font-size: 11pt;
+                        }
+                        .summary-row.total {
+                            font-size: 13pt;
+                            font-weight: bold;
+                            color: #27ae60;
+                            border-bottom: none;
+                            border-top: 2px solid #2c3e50;
+                            padding-top: 10px;
+                            margin-top: 5px;
+                        }
+                        .footer-note {
+                            margin-top: 20px;
+                            padding: 10px;
+                            background-color: #fef9e7;
+                            border-left: 4px solid #f39c12;
+                            font-size: 9pt;
+                            color: #555;
+                        }
+                        .signature-row {
+                            margin-top: 50px;
+                            display: flex;
+                            justify-content: space-between;
+                        }
+                        .signature-box {
+                            text-align: center;
+                            width: 30%;
+                            border-top: 1px solid #333;
+                            padding-top: 8px;
+                            font-size: 10pt;
+                        }
+                        .badge-status {
+                            display: inline-block;
+                            padding: 3px 10px;
+                            border-radius: 12px;
+                            font-size: 10pt;
+                            font-weight: bold;
+                        }
+                        .badge-paid { background: #d5f5e3; color: #1e8449; }
+                        .badge-approved { background: #d6eaf8; color: #1a5276; }
+                        .badge-confirmed { background: #fef9e7; color: #9a7d0a; }
+                        .badge-draft { background: #f2f3f4; color: #555; }
+                    </style>
+
+                    <div class="gratuity-header">
+                        <div class="gratuity-title">GRATUITY SETTLEMENT REPORT</div>
+                        <div class="gratuity-subtitle">In accordance with Bangladesh Labor Law 2006</div>
+                        <div style="margin-top:8px;">
+                            <t t-if="doc.state == 'paid'">
+                                <span class="badge-status badge-paid">✓ Paid</span>
+                            </t>
+                            <t t-elif="doc.state == 'approved'">
+                                <span class="badge-status badge-approved">✓ Approved</span>
+                            </t>
+                            <t t-elif="doc.state == 'confirmed'">
+                                <span class="badge-status badge-confirmed">Confirmed</span>
+                            </t>
+                            <t t-else="">
+                                <span class="badge-status badge-draft">Draft</span>
+                            </t>
+                        </div>
+                    </div>
+
+                    <hr/>
+
+                    <div class="section-title">Employee Information</div>
+                    <table class="info-table">
+                        <tr>
+                            <td class="label">Reference No:</td>
+                            <td><t t-esc="doc.name"/></td>
+                            <td class="label">Employee ID:</td>
+                            <td><t t-esc="doc.employee_id.barcode or doc.employee_id.id"/></td>
+                        </tr>
+                        <tr>
+                            <td class="label">Employee Name:</td>
+                            <td><strong><t t-esc="doc.employee_id.name"/></strong></td>
+                            <td class="label">Job Position:</td>
+                            <td><t t-esc="doc.job_id.name or 'N/A'"/></td>
+                        </tr>
+                        <tr>
+                            <td class="label">Department:</td>
+                            <td><t t-esc="doc.department_id.name or 'N/A'"/></td>
+                            <td class="label">Company:</td>
+                            <td><t t-esc="doc.company_id.name"/></td>
+                        </tr>
+                    </table>
+
+                    <div class="section-title">Service Information</div>
+                    <table class="info-table">
+                        <tr>
+                            <td class="label">Joining Date:</td>
+                            <td><t t-esc="doc.joining_date" t-options="{'widget': 'date'}"/></td>
+                            <td class="label">Departure Date:</td>
+                            <td>
+                                <t t-if="doc.departure_date">
+                                    <t t-esc="doc.departure_date" t-options="{'widget': 'date'}"/>
+                                </t>
+                                <t t-else="">—</t>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">Total Service:</td>
+                            <td><strong><t t-esc="doc.service_years_display"/></strong></td>
+                            <td class="label">Calculation Date:</td>
+                            <td><t t-esc="doc.calculation_date" t-options="{'widget': 'date'}"/></td>
+                        </tr>
+                    </table>
+
+                    <div class="section-title">Salary Information</div>
+                    <table class="info-table">
+                        <tr>
+                            <td class="label">Gross Wage:</td>
+                            <td>
+                                <t t-esc="doc.gross_wage"
+                                   t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/>
+                            </td>
+                            <td class="label">Basic Percentage:</td>
+                            <td><t t-esc="doc.basic_percentage"/>%</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Basic Wage:</td>
+                            <td>
+                                <strong>
+                                    <t t-esc="doc.basic_wage"
+                                       t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/>
+                                </strong>
+                            </td>
+                            <td class="label">Working Days/Month:</td>
+                            <td><t t-esc="doc.working_days_per_month"/> Days</td>
+                        </tr>
+                    </table>
+
+                    <div class="section-title">Gratuity Calculation Breakdown (BD Labor Law 2006)</div>
+                    <table class="calc-table">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th style="text-align:center">Years</th>
+                                <th style="text-align:center">Days/Year</th>
+                                <th style="text-align:right">Daily Wage</th>
+                                <th style="text-align:right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="doc.gratuity_line_ids" t-as="line">
+                                <tr>
+                                    <td><t t-esc="line.description"/></td>
+                                    <td style="text-align:center">
+                                        <t t-esc="'%.2f' % line.years"/>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <t t-esc="line.days_per_year"/>
+                                    </td>
+                                    <td style="text-align:right">
+                                        <t t-esc="'%.4f' % line.daily_wage"/>
+                                    </td>
+                                    <td style="text-align:right">
+                                        <t t-esc="line.amount"
+                                           t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </t>
+                            <tr class="total-row">
+                                <td colspan="4">Total Gratuity</td>
+                                <td style="text-align:right">
+                                    <t t-esc="doc.total_gratuity"
+                                       t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="section-title">Summary</div>
+                    <div class="summary-box">
+                        <div class="summary-row">
+                            <span>Total Gratuity:</span>
+                            <span>
+                                <t t-esc="doc.total_gratuity"
+                                   t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/>
+                            </span>
+                        </div>
+                        <div class="summary-row">
+                            <span>
+                                Taxable Portion
+                                <t t-if="doc.is_nbr_approved">
+                                    (NBR Approved — Above Exemption Limit)
+                                </t>:
+                            </span>
+                            <span>
+                                <t t-esc="doc.taxable_portion"
+                                   t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/>
+                            </span>
+                        </div>
+                        <div class="summary-row">
+                            <span>TDS (Tax Rate: <t t-esc="doc.tax_rate"/>%):</span>
+                            <span style="color: #c0392b;">
+                                (<t t-esc="doc.tds_amount"
+                                    t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/>)
+                            </span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Net Payout:</span>
+                            <span>
+                                <t t-esc="doc.net_payout"
+                                   t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/>
+                            </span>
+                        </div>
+                    </div>
+
+                    <t t-if="doc.state == 'paid'">
+                        <div class="section-title">Payment Information</div>
+                        <table class="info-table">
+                            <tr>
+                                <td class="label">Payment Date:</td>
+                                <td><t t-esc="doc.payment_date" t-options="{'widget': 'date'}"/></td>
+                                <td class="label">Payment Reference:</td>
+                                <td><t t-esc="doc.payment_reference or '—'"/></td>
+                            </tr>
+                        </table>
+                    </t>
+
+                    <div class="footer-note">
+                        <strong>Note:</strong> This gratuity calculation has been compiled according to the rules of the Bangladesh Labor Law 2006. For 1 to 5 years of tenure, 30 days of basic wage per year applies, and for service duration exceeding 5 years, 45 days of basic wage per year applies.
+                        <t t-if="doc.is_nbr_approved">
+                            As this is distributed from an NBR Approved Gratuity Fund, the payout amount is tax-exempt up to BDT 25,000,000 (2.5 Crore).
+                        </t>
+                    </div>
+
+                    <div class="signature-row">
+                        <div class="signature-box">
+                            <div>Employee's Signature</div>
+                            <div style="color:#888; font-size:9pt; margin-top:4px;">
+                                <t t-esc="doc.employee_id.name"/>
+                            </div>
+                        </div>
+                        <div class="signature-box">
+                            <div>HR Manager</div>
+                        </div>
+                        <div class="signature-box">
+                            <div>Authorized Signatory</div>
+                        </div>
+                    </div>
+
+                </div></t></t></t></template>
+</odoo>
