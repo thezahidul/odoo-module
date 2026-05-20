@@ -322,7 +322,7 @@ class HrGratuity(models.Model):
         self.write({'state': 'draft'})
 
     def action_print_settlement_report(self):
-        return self.env.ref('hr_gratuity_bd.action_report_gratuity_settlement').report_action(self)
+        return self.env.ref('hr_gratuity.action_report_gratuity_settlement').report_action(self)
 
 
 class HrGratuityLine(models.Model):
