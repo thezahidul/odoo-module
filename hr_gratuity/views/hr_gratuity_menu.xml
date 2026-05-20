@@ -1,6 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <record id="seq_hr_gratuity" model="ir.sequence">
+        <field name="name">HR Gratuity</field>
+        <field name="code">hr.gratuity</field>
+        <field name="prefix">GRTY/%(year)s/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="action_hr_gratuity" model="ir.actions.act_window">
+        <field name="name">Gratuity Settlements</field>
+        <field name="res_model">hr.gratuity</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create the first Gratuity Settlement Record
+            </p>
+            <p>
+                Manage corporate employee gratuity processing, tax calculations, and dynamic PDF settlement outputs.
+            </p>
+        </field>
+    </record>
+
     <record id="action_hr_gratuity_policy" model="ir.actions.act_window">
         <field name="name">Gratuity Policies</field>
         <field name="res_model">hr.gratuity.policy</field>
@@ -18,7 +41,7 @@
 
     <menuitem
         id="menu_hr_gratuity_root"
-        name="Gratuity (BD Law)"
+        name="Gratuity"
         parent="hr.menu_hr_root"
         sequence="25"/>
 
@@ -42,13 +65,5 @@
         parent="menu_hr_gratuity_configuration"
         action="action_hr_gratuity_policy"
         sequence="10"/>
-
-    <record id="seq_hr_gratuity" model="ir.sequence">
-        <field name="name">HR Gratuity</field>
-        <field name="code">hr.gratuity</field>
-        <field name="prefix">GRTY/%(year)s/</field>
-        <field name="padding">5</field>
-        <field name="company_id" eval="False"/>
-    </record>
 
 </odoo>

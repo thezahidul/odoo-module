@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from odoo import api, fields, models
 
 
@@ -36,7 +38,7 @@ class HrEmployee(models.Model):
         for employee in self:
             # Filter out cancelled records from the count and state check
             records = employee.gratuity_ids.filtered(
-                lambda r: r.state != 'cancelled'
+                lambda r: r.state != 'cancel'  # ওডু-র স্ট্যান্ডার্ড 'cancel' স্টেট সাধারণত 'cancelled' এর চেয়ে বেশি ব্যবহৃত হয়, আপনার মডেলে যা আছে তা মিলিয়ে নেবেন
             )
             employee.gratuity_count = len(records)
             
@@ -50,16 +52,25 @@ class HrEmployee(models.Model):
     def action_open_gratuity(self):
         """Action to open Gratuity records directly from the Employee Form"""
         self.ensure_one()
-        action = self.env.ref('hr_gratuity_bd.action_hr_gratuity').read()[0]
-        action['domain'] = [('employee_id', '=', self.id)]
-        action['context'] = {
-            'default_employee_id': self.id,
-            'default_joining_date': self.date_start,
+        
+        # ওডু ১৯ স্ট্যান্ডার্ড ডাইনামিক অ্যাকশন রিটার্ন (নতুন মডিউল নেম স্পেস সহ)
+        action = {
+            'name': 'Gratuity Settlement',
+            'type': 'ir.actions.act_window',
+            'res_model': 'hr.gratuity',
+            'view_mode': 'list,form',
+            'domain': [('employee_id', '=', self.id)],
+            'context': {
+                'default_employee_id': self.id,
+                'default_joining_date': self.date_start,
+            },
+            'target': 'current',
         }
         
-        # If there is only one record, open its form view directly
-        if self.gratuity_count == 1:
+        # If there is exactly one record, open its form view directly for better UX
+        active_records = self.gratuity_ids.filtered(lambda r: r.state != 'cancel')
+        if len(active_records) == 1:
             action['view_mode'] = 'form'
-            action['res_id'] = self.gratuity_ids[0].id
+            action['res_id'] = active_records[0].id
             
         return action
