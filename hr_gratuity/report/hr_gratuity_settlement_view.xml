@@ -17,8 +17,8 @@
         <field name="name">Gratuity Settlement Report</field>
         <field name="model">hr.gratuity</field>
         <field name="report_type">qweb-pdf</field>
-        <field name="report_name">hr_gratuity_bd.report_gratuity_settlement</field>
-        <field name="report_file">hr_gratuity_bd.report_gratuity_settlement</field>
+        <field name="report_name">hr_gratuity.report_gratuity_settlement</field>
+        <field name="report_file">hr_gratuity.report_gratuity_settlement</field>
         <field name="print_report_name">'Gratuity_Settlement_%s' % (object.name)</field>
         <field name="paperformat_id" ref="paperformat_gratuity_a4"/>
         <field name="binding_model_id" ref="model_hr_gratuity"/>

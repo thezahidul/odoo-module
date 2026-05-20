@@ -15,14 +15,47 @@ An enterprise-grade, standalone Odoo 19 module configured to automate, manage, a
 
 ---
 
-## 🛠️ System Architecture & Directories
+## 🔄 Gratuity Settlement Work-Flow Cycle
+
+Below is the execution lifecycle of a gratuity record inside the Odoo 19 ecosystem:
 
 ```text
-hr_gratuity/
-├── models/             # Business logic & compliance algorithms
-├── views/              # Form, Tree, and Smart Button views
-├── report/             # Document layouts & A4 print specifications
-├── security/           # Access rights & record rules
-├── README.md           # Module documentation & feature list
-├── __init__.py         # Python initialization
-└── __manifest__.py     # Module manifest configuration
+  [ Employee Resigns / Retires ]
+                 │
+                 ▼
+     [ Create Gratuity Record ]  ──► (Status: Draft)
+                 │
+                 ▼
+  [ Compute Service Tenure & Base ] ──► Adheres to BD Labor Law 2006
+                 │
+                 ▼
+   [ Compute TDS / Tax Exemption ] ──► Adheres to NBR Regulations
+                 │
+                 ▼
+    [ HR Manager Verification ]  ──► (Status: Confirmed / Approved)
+                 │
+                 ▼
+   [ Finance & Payroll Posting ] ──► (Status: Paid)
+                 │
+                 ▼
+[ Generate & Print A4 PDF Statement ] ──► Multi-Dept Signature Sign-Off
+```
+
+## ⚙️ Installation & Configuration
+
+### Prerequisites
+Before triggering the module initialization, ensure that your Odoo 19 environment has the core dependencies active and that the host server is configured correctly:
+- `hr` (Base Employee Directory)
+- `mail` (Enterprise Discussion & Tracking Mixin)
+- **External Dependency:** `wkhtmltopdf` (v0.12.5 or v0.12.6 with patched Qt) must be globally accessible in the host system PATH to render custom typography, multi-page breaks, and BDT currency symbols without CSS degradation.
+
+---
+
+### Module Setup & Initial Deployment
+
+1. **Repository Synchronization:** Extract the `hr_gratuity` module directory and copy it directly into your designated Odoo custom addons repository path.
+2. **Server-Side Warm Restart:** Force-release any active background zombie processes locking your target deployment port and restart the core Odoo server instance:
+   ```bash
+   sudo fuser -k 8088/tcp
+   ./odoo-bin -c odoo.conf -d dbv19 -u hr_gratuity
+   ```
