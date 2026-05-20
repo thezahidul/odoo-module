@@ -23,7 +23,9 @@
                 <sheet>
                     <div class="oe_title">
                         <label for="name" string="Policy Name"/>
-                        <h1><field name="name" placeholder="e.g., Bangladesh Labor Law 2006"/></h1>
+                        <h1>
+                            <field name="name" placeholder="e.g., Bangladesh Labor Law 2006"/>
+                        </h1>
                     </div>
                     <group string="Service &amp; Day Calculations">
                         <group>
@@ -68,7 +70,9 @@
 
                 <sheet>
                     <div class="oe_title">
-                        <h1><field name="name" readonly="1"/></h1>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
                     </div>
 
                     <group string="Employee Information">
@@ -139,8 +143,8 @@
                                     <field name="is_nbr_approved"/>
                                     <field name="tax_exemption_limit" invisible="not is_nbr_approved"/>
                                     <field name="tax_rate"/>
-                                 </group>
-                                 <group string="Tax Breakdown">
+                                </group>
+                                <group string="Tax Breakdown">
                                     <field name="taxable_portion"/>
                                     <field name="tds_amount"/>
                                     <field name="net_payout" class="oe_subtotal_footer_separator"/>
