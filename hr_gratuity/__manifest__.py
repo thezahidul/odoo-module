@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'HR Gratuity Settlement Management',
-    'version': '19.0.1.0.0',
+    'name': 'Custom HR Gratuity',
+    'summary': 'Dynamic Multi-Tier Gratuity Configuration, Tenure Tracking, and Final Settlement Pipeline',
     'category': 'Human Resources/Payroll',
-    'summary': 'Automated Gratuity Calculation and Compliance Reporting under Bangladesh Labor Act 2006',
+    'version': '19.0.1.0.0',
     'author': 'Zahidul Islam',
     'website': 'https://github.com/',
     'license': 'LGPL-3',
