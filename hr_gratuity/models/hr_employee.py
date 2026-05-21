@@ -53,7 +53,6 @@ class HrEmployee(models.Model):
         """Action to open Gratuity records directly from the Employee Form"""
         self.ensure_one()
         
-        # ওডু ১৯ স্ট্যান্ডার্ড ডাইনামিক অ্যাকশন রিটার্ন (নতুন মডিউল নেম স্পেস সহ)
         action = {
             'name': 'Gratuity Settlement',
             'type': 'ir.actions.act_window',

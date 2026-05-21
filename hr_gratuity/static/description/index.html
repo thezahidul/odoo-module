@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HR Gratuity &amp; Final Settlement Engine</title>
+    <style>
+        /* ─── ODOO 19 NATIVE DYNAMIC THEME VARIATION ─── */
+        :root {
+            --gratuity-title-color: #0f172a;
+            --gratuity-text-color: #475569;
+            --gratuity-card-bg: #ffffff;
+            --gratuity-card-border: #e2e8f0;
+            --gratuity-code-bg: #f8fafc;
+        }
+
+        /* Seamless variable swap when system or Odoo enters Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --gratuity-title-color: #f8fafc !important;
+                --gratuity-text-color: #cbd5e1 !important;
+                --gratuity-card-bg: #1e293b !important;
+                --gratuity-card-border: #334155 !important;
+                --gratuity-code-bg: #0f172a !important;
+            }
+        }
+
+        /* Odoo Web Client Native Dark Mode Class Protection Hooks */
+        .o_web_client.o_darkmode :root,
+        .o_darkmode :root,
+        [data-bs-theme="dark"] :root {
+            --gratuity-title-color: #f8fafc !important;
+                --gratuity-text-color: #cbd5e1 !important;
+                --gratuity-card-bg: #1e293b !important;
+                --gratuity-card-border: #334155 !important;
+                --gratuity-code-bg: #0f172a !important;
+        }
+
+        .gratuity-text-title { color: var(--gratuity-title-color) !important; }
+        .gratuity-text-p { color: var(--gratuity-text-color) !important; }
+        .gratuity-card { background-color: var(--gratuity-card-bg) !important; border-color: var(--gratuity-card-border) !important; }
+        .gratuity-code-block { background-color: var(--gratuity-code-bg) !important; }
+        .gratuity-pipeline-box { background-color: var(--gratuity-code-bg) !important; border-color: var(--gratuity-card-border) !important; color: var(--gratuity-title-color) !important; }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background: transparent; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; transition: all 0.3s ease;">
+
+<div style="max-width: 1000px; margin: 0 auto; padding: 20px 15px;">
+
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 12px; padding: 45px 35px; text-align: center; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08); position: relative; overflow: hidden;">
+        <span style="background-color: #3b82f6; color: white; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin-bottom: 15px;">Fully Configurable &amp; Dynamic</span>
+        <h1 style="color: #ffffff; font-size: 32px; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -0.5px; line-height: 1.2;">Custom HR Gratuity &amp; Settlement Engine</h1>
+        <p style="color: #94a3b8; font-size: 15px; max-width: 700px; margin: 0 auto 25px auto; line-height: 1.5;">
+            An advanced enterprise-grade Odoo 19 payroll framework extension designed to construct, compute, and maintain custom organizational gratuity rules and multi-tier matrices seamlessly.
+        </p>
+
+        <div style="display: block; text-align: center;">
+            <div style="display: inline-block; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 8px 15px; margin: 5px 10px; text-align: left;">
+                <span style="color: #64748b; font-size: 10px; display: block; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Framework Version</span>
+                <span style="color: #f8fafc; font-size: 13px; font-weight: 600;">Odoo v19.0+ (Community &amp; Enterprise)</span>
+            </div>
+            <div style="display: inline-block; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 8px 15px; margin: 5px 10px; text-align: left;">
+                <span style="color: #64748b; font-size: 10px; display: block; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Engine Architecture</span>
+                <span style="color: #f8fafc; font-size: 13px; font-weight: 600;">Dynamic Formula Multipliers</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="gratuity-card" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 25px; margin-bottom: 30px; border-left: 4px solid #3b82f6; transition: all 0.3s ease;">
+        <h4 class="gratuity-text-title" style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700;">⚙️ Fully Configurable Policy Design Matrix</h4>
+        <p class="gratuity-text-p" style="margin: 0; font-size: 13.5px; line-height: 1.5;">
+            No calculation constants are hardcoded within this solution. Administrators are equipped with a dynamic structural canvas to model lower-tier operational rules, set arbitrary working day division ceilings (e.g., 26 days or 30 days), track custom corporate timelines, and specify precise rounding procedures globally directly from the configuration layer.
+        </p>
+    </div>
+
+    <h3 class="gratuity-text-title" style="font-size: 20px; font-weight: 800; margin: 0 0 20px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">📌 Structural Module Highlights</h3>
+    
+    <table style="width: 100%; border-collapse: separate; border-spacing: 0 15px; margin-top: -15px; margin-bottom: 25px;">
+        <tr>
+            <td style="width: 45px; vertical-align: top; padding-top: 2px;">
+                <div style="background-color: #eff6ff; color: #1d4ed8; width: 34px; height: 34px; border-radius: 6px; text-align: center; line-height: 34px; font-weight: bold; font-size: 14px;">📅</div>
+            </td>
+            <td style="vertical-align: top; padding-left: 10px;">
+                <h4 class="gratuity-text-title" style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700;">Precise Service Tenure Tracking</h4>
+                <p class="gratuity-text-p" style="margin: 0; font-size: 13px; line-height: 1.45;">Analyzes employment joining and departure timelines to compute exact service history metrics broken down to absolute year fractions, months, and remainder calendar days.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 45px; vertical-align: top; padding-top: 2px;">
+                <div style="background-color: #f0fdf4; color: #15803d; width: 34px; height: 34px; border-radius: 6px; text-align: center; line-height: 34px; font-weight: bold; font-size: 14px;">🛠️</div>
+            </td>
+            <td style="vertical-align: top; padding-left: 10px;">
+                <h4 class="gratuity-text-title" style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700;">Dynamic Rule Multipliers</h4>
+                <p class="gratuity-text-p" style="margin: 0; font-size: 13px; line-height: 1.45;">Maps unique multipliers dynamically against defined service configurations, allowing custom multi-tier calculation multipliers to apply based on tenure milestones.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 45px; vertical-align: top; padding-top: 2px;">
+                <div style="background-color: #fffbeb; color: #b45309; width: 34px; height: 34px; border-radius: 6px; text-align: center; line-height: 34px; font-weight: bold; font-size: 14px;">💰</div>
+            </td>
+            <td style="vertical-align: top; padding-left: 10px;">
+                <h4 class="gratuity-text-title" style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700;">Withholding Tax &amp; TDS Exemptions</h4>
+                <p class="gratuity-text-p" style="margin: 0; font-size: 13px; line-height: 1.45;">Configures regulatory taxation parameters including explicit statutory exemption ceilings, automatically assessing taxable intersections before completing final payments.</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 45px; vertical-align: top; padding-top: 2px;">
+                <div style="background-color: #fef2f2; color: #b91c1c; width: 34px; height: 34px; border-radius: 6px; text-align: center; line-height: 34px; font-weight: bold; font-size: 14px;">🛡️</div>
+            </td>
+            <td style="vertical-align: top; padding-left: 10px;">
+                <h4 class="gratuity-text-title" style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700;">Strict Duplicate Integrity Guards</h4>
+                <p class="gratuity-text-p" style="margin: 0; font-size: 13px; line-height: 1.45;">Enforces absolute server-side database constraint overrides, trapping duplicate entries instantly to ensure each employee profile is limited to one active historical settlement record.</p>
+            </td>
+        </tr>
+    </table>
+
+    <h3 class="gratuity-text-title" style="font-size: 20px; font-weight: 800; margin: 30px 0 20px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">🔄 Settlement Lifecycle Pipeline</h3>
+    
+    <div class="gratuity-card" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 25px 20px; margin-bottom: 30px; transition: all 0.3s ease;">
+        <table style="width: 100%; border-collapse: collapse; text-align: center;">
+            <tr>
+                <td style="width: 22%;">
+                    <div class="gratuity-pipeline-box" style="border: 1px dashed #cbd5e1; padding: 12px 8px; border-radius: 6px;">
+                        <span style="font-size: 11px; font-weight: bold; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 4px;">Stage 1</span>
+                        <strong style="font-size: 14px; display: block;">Draft</strong>
+                        <span class="gratuity-text-p" style="font-size: 11px; display: block; margin-top: 3px;">Statement Opened</span>
+                    </div>
+                </td>
+                <td style="width: 4%; color: #94a3b8; font-size: 18px; font-weight: bold;">➔</td>
+                <td style="width: 22%;">
+                    <div class="gratuity-pipeline-box" style="border: 1px dashed #fcd34d; padding: 12px 8px; border-radius: 6px;">
+                        <span style="font-size: 11px; font-weight: bold; color: #b45309; text-transform: uppercase; display: block; margin-bottom: 4px;">Stage 2</span>
+                        <strong style="font-size: 14px; display: block; color: #b45309;">Confirmed</strong>
+                        <span class="gratuity-text-p" style="font-size: 11px; display: block; margin-top: 3px;">Tenure Audited</span>
+                    </div>
+                </td>
+                <td style="width: 4%; color: #94a3b8; font-size: 18px; font-weight: bold;">➔</td>
+                <td style="width: 22%;">
+                    <div class="gratuity-pipeline-box" style="border: 1px dashed #93c5fd; padding: 12px 8px; border-radius: 6px;">
+                        <span style="font-size: 11px; font-weight: bold; color: #1d4ed8; text-transform: uppercase; display: block; margin-bottom: 4px;">Stage 3</span>
+                        <strong style="font-size: 14px; display: block; color: #1d4ed8;">Approved</strong>
+                        <span class="gratuity-text-p" style="font-size: 11px; display: block; margin-top: 3px;">Tax Lock Checked</span>
+                    </div>
+                </td>
+                <td style="width: 4%; color: #94a3b8; font-size: 18px; font-weight: bold;">➔</td>
+                <td style="width: 22%;">
+                    <div class="gratuity-pipeline-box" style="border: 1px dashed #86efac; padding: 12px 8px; border-radius: 6px;">
+                        <span style="font-size: 11px; font-weight: bold; color: #16a34a; text-transform: uppercase; display: block; margin-bottom: 4px;">Stage 4</span>
+                        <strong style="font-size: 14px; display: block; color: #16a34a;">Paid</strong>
+                        <span class="gratuity-text-p" style="font-size: 11px; display: block; margin-top: 3px;">Ledger Disbursed</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <h3 class="gratuity-text-title" style="font-size: 20px; font-weight: 800; margin: 30px 0 20px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">⚙️ Configuration Guidelines</h3>
+    
+    <div class="gratuity-card" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 25px; margin-bottom: 20px; transition: all 0.3s ease;">
+        <p class="gratuity-text-p" style="margin: 0 0 15px 0; font-size: 13.5px; line-height: 1.5;">
+            To provision customized parameter values matching your corporate policy, navigate to the unified configuration console path:
+        </p>
+        <div class="gratuity-code-block" style="border-left: 3px solid #3b82f6; padding: 12px 15px; margin-bottom: 15px; border-radius: 0 4px 4px 0;">
+            <code class="gratuity-text-title" style="font-family: Consolas, Monaco, monospace; font-size: 13px; font-weight: bold;">Employees ──► Gratuity ──► Configuration ──► Gratuity Policies</code>
+        </div>
+        <ul class="gratuity-text-p" style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.6;">
+            <li style="margin-bottom: 6px;">Input corporate basic salary computation ratios (e.g., 50%).</li>
+            <li style="margin-bottom: 6px;">Assign standard operational day division ceilings (e.g., 26 or 30 Days).</li>
+            <li style="margin-bottom: 0;">Specify custom minimum operational service thresholds for eligibility.</li>
+        </ul>
+    </div>
+
+    <div style="text-align: center; padding-top: 20px; border-top: 1px solid #e2e8f0; margin-top: 35px;">
+        <span style="font-size: 12px; color: #94a3b8; font-weight: 500;">Designed and Developed under Professional Technical Standards Architecture.</span>
+    </div>
+
+</div>
+
+</body>
+</html>

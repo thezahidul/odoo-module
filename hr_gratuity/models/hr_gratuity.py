@@ -8,9 +8,7 @@ import math
 
 
 class HrGratuityPolicy(models.Model):
-    """
-    গ্লোবাল বা কোম্পানিভিত্তিক গ্র্যাচুইটি পলিসি কনফিগারেশন মডেল।
-    """
+
     _name = 'hr.gratuity.policy'
     _description = 'HR Gratuity Policy Configuration'
     _order = 'name asc'
@@ -29,7 +27,6 @@ class HrGratuityPolicy(models.Model):
         ('floor', 'Complete Years Only (Ignore Months)')
     ], string='Rounding Policy', default='bd_law', required=True)
 
-    # ─── পলিসির ভেতরে ট্যাক্স সেটিংস ───
     is_nbr_approved = fields.Boolean(string='NBR Approved?', default=True, help="If checked, tax exemption limit will apply.")
     tax_exemption_limit = fields.Monetary(string='Tax Exemption Limit', default=25000000.0, currency_field='currency_id')
     tax_rate = fields.Float(string='Tax Rate (%)', default=10.0, digits=(16, 2))
@@ -282,17 +279,27 @@ class HrGratuity(models.Model):
                 if rec.departure_date < rec.joining_date:
                     raise ValidationError(_('Departure date cannot be earlier than the joining date!'))
 
-    @api.constrains('employee_id', 'state')
-    def _check_duplicate_active(self):
+
+    @api.constrains('employee_id')
+    def _check_strict_single_record(self):
+        """
+        Enforces absolute uniqueness: One employee can have ONLY ONE gratuity 
+        record in the entire database, period.
+        """
         for rec in self:
+            if not rec.employee_id:
+                continue
+                
             existing = self.search([
                 ('employee_id', '=', rec.employee_id.id),
-                ('state', 'not in', ['cancelled', 'paid']),
                 ('id', '!=', rec.id),
             ])
             if existing:
-                raise ValidationError(_('An active Gratuity record already exists for this employee!'))
-
+                raise ValidationError(_(
+                    "Duplicate Blocked: A Gratuity record already exists for %s! You cannot create multiple records for the same employee." 
+                    % rec.employee_id.name
+                ))
+            
     def action_confirm(self):
         for rec in self:
             if rec.service_years < rec.min_service_years:

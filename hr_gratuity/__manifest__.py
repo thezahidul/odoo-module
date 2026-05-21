@@ -17,9 +17,14 @@
         'views/hr_gratuity_views.xml',
         'views/hr_employee_views.xml',
         'views/hr_gratuity_menu.xml',
-        'report/hr_gratuity_settlement_view.xml',
         'report/hr_gratuity_settlement_template.xml',
+        'report/hr_gratuity_settlement_view.xml',
     ],
+    'assets': {
+        'web.report_assets_common': [
+            'hr_gratuity/static/src/css/gratuity_report.css',
+        ],
+    },
     'installable': True,
     'application': True,
     'auto_install': False,
