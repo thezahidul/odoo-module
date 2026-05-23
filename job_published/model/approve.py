@@ -2,6 +2,7 @@ from odoo import models, fields, api
 
 class Job(models.Model):
     _inherit = 'hr.job'
+    _name = 'hr.job'
 
     state = fields.Selection([
         ('draft', 'Draft'),

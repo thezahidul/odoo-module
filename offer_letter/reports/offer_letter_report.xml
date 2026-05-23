@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_offer_letter" model="ir.actions.report">
+        <field name="name">Offer Letter</field>
+        <field name="model">hr.applicant</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">offer_letter.report_offer_letter_template</field>
+    </record>
+
+    <template id="report_offer_letter_template">
+        <t t-call="web.external_layout">
+            <div class="page">
+                <h2>Job Offer Letter</h2>
+                <p>Dear <span t-field="o.partner_name"/>,</p>
+            </div>
+        </t>
+    </template>
+</odoo>
