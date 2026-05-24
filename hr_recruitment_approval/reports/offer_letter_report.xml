@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="paperformat_custom_offer_letter" model="report.paperformat">
+        <field name="name">Offer Letter A4 Format</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">12</field>
+        <field name="margin_bottom">15</field>
+        <field name="margin_left">15</field>
+        <field name="margin_right">15</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_offer_letter" model="ir.actions.report">
+        <field name="name">Offer Letter</field>
+        <field name="model">hr.applicant</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hr_recruitment_approval.report_offer_letter_template</field>
+        <field name="print_report_name">'Offer Letter - %s' % (object.partner_name)</field>
+        <field name="paperformat_id" ref="hr_recruitment_approval.paperformat_custom_offer_letter"/>
+    </record>
+
+    <template id="report_offer_letter_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.basic_layout">
+                    <div class="page custom-offer-letter">
+
+                        <table style="width: 100%; border: none; margin-bottom: 15px;">
+                            <tr style="border: none;">
+                                <td style="width: 50%; vertical-align: middle; border: none; padding: 0;">
+                                    <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" class="company-logo" alt="Logo"/>
+                                </td>
+                                <td style="width: 50%; text-align: right; vertical-align: middle; border: none; padding: 0;">
+                                    <div class="company-details">
+                                        <div class="company-name">
+                                            <t t-esc="o.company_id.name"/>
+                                        </div>
+                                        <div t-if="o.company_id.street">
+                                            <t t-esc="o.company_id.street"/>
+                                        </div>
+                                        <div>
+                                            <span t-if="o.company_id.city">
+                                                <t t-esc="o.company_id.city"/>
+                                            </span>
+                                            <span t-if="o.company_id.zip"> -                                                <t t-esc="o.company_id.zip"/>
+                                            </span>
+                                        </div>
+                                        <div style="margin-top: 5px;">
+                                            <span t-if="o.company_id.phone">Tel: <t t-esc="o.company_id.phone"/>
+                                            </span>
+                                            <span t-if="o.company_id.email"> | Email: <t t-esc="o.company_id.email"/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div class="report-title">FORMAL JOB OFFER</div>
+
+                        <div style="margin-bottom: 20px;">
+                            <strong>Date:</strong>
+                            <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d %B, %Y')"/>
+                            <br/>
+                            <br/>
+                            <strong>To:</strong>
+                            <br/>
+                            <strong>
+                                <t t-esc="o.partner_name"/>
+                            </strong>
+                            <br/>
+                            <span t-if="o.partner_phone">
+                                <t t-esc="o.partner_phone"/>
+                                <br/>
+                            </span>
+                            <span t-if="o.email_from">
+                                <t t-esc="o.email_from"/>
+                            </span>
+                        </div>
+
+                        <p>Dear <strong>
+                            <t t-esc="o.partner_name"/>
+                        </strong>,
+                    </p>
+                    <p>Following our recent selection process, we are delighted to formally offer you the position of <strong>
+                        <t t-esc="o.job_id.name"/>
+                    </strong> at <strong>
+                    <t t-esc="o.company_id.name"/>
+                </strong>. We believe your skills and experience will be a great addition to our team.</p>
+
+            <div class="section-title">Employment Details</div>
+            <table class="info-table">
+                <tr>
+                    <td class="label">Job Title:</td>
+                    <td class="value">
+                        <strong>
+                            <t t-esc="o.job_id.name"/>
+                        </strong>
+                    </td>
+                </tr>
+                <tr t-if="o.department_id">
+                    <td class="label">Department:</td>
+                    <td class="value">
+                        <t t-esc="o.department_id.name"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">Primary Work Location:</td>
+                    <td class="value">
+                        <t t-esc="o.company_id.city"/>
+ Office</td>
+                </tr>
+                <tr>
+                    <td class="label">Employment Type:</td>
+                    <td class="value">Full-Time</td>
+                </tr>
+            </table>
+
+            <div class="section-title">Key Terms &amp; Conditions</div>
+            <p class="terms-text">
+                <strong>1. Confidentiality:</strong> You are required to maintain strict confidentiality regarding all business strategies, client details, and proprietary information of the company.</p>
+            <p class="terms-text">
+                <strong>2. Duties:</strong> You will be responsible for fulfilling the duties outlined for your role. The company may reassign tasks based on organizational needs.</p>
+            <p class="terms-text">
+                <strong>3. Acceptance:</strong> Please sign and return a copy of this letter to the HR department to confirm your acceptance of this offer.</p>
+
+            <p style="margin-top: 25px;">We look forward to welcoming you to the team!</p>
+
+            <table style="width: 100%; margin-top: 80px; page-break-inside: avoid; border: none; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 45%; vertical-align: top; border: none; padding: 0;">
+                        <div style="border-top: 1px solid #334155; padding-top: 5px;">
+                            <div style="font-weight: bold; font-size: 14px; color: #0f172a;">For <t t-esc="o.company_id.name"/>
+                            </div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Authorized Signatory (HR)</div>
+                        </div>
+                    </td>
+
+                    <td style="width: 10%; border: none; padding: 0;"></td>
+
+                    <td style="width: 45%; vertical-align: top; border: none; padding: 0;">
+                        <div style="border-top: 1px solid #334155; padding-top: 5px;">
+                            <div style="font-weight: bold; font-size: 14px; color: #0f172a;">Accepted By Candidate</div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Signature &amp; Date</div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+    </t>
+</t>
+</t>
+</template>
+
+</odoo>

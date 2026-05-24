@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="email_template_offer_letter" model="mail.template">
+    <field name="name">Offer Letter Email</field>
+    <field name="model_id" ref="hr_recruitment.model_hr_applicant"/>
+    <field name="subject">Job Offer - {{ object.job_id.name }}</field>
+    <field name="body_html" type="html">
+        <p>Dear <t t-out="object.partner_name"/>,</p>
+        <p>Attached is your formal offer letter.</p>
+    </field>
+    </record>
+
+</odoo>

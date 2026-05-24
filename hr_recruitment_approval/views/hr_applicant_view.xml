@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_hr_applicant_form_inherit" model="ir.ui.view">
+        <field name="name">hr.applicant.form.inherit</field>
+        <field name="model">hr.applicant</field>
+        <field name="inherit_id" ref="hr_recruitment.hr_applicant_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_generate_offer_letter_pdf" string="Print offer" type="object" class="btn-primary" invisible="stage_id != 5" />
+                <button name="action_send_offer_email" string="Send Email" type="object" class="btn-secondary" invisible="stage_id != 5" />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
+
