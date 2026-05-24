@@ -4,10 +4,10 @@ class HrApplicant(models.Model):
     _inherit = 'hr.applicant'
 
     def action_generate_offer_letter_pdf(self):
-        return self.env.ref('offer_latter.action_report_offer_letter').report_action(self)
+        return self.env.ref('offer_letter.action_report_offer_letter').report_action(self)
 
     def action_send_offer_email(self):
-        template = self.env.ref('offer_latter.email_template_offer_letter', False)
+        template = self.env.ref('offer_letter.email_template_offer_letter', False)
         return {
             'type': 'ir.actions.act_window',
             'view_mode': 'form',
