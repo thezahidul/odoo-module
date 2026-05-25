@@ -63,7 +63,7 @@
                             </tr>
                         </table>
 
-                        <div class="report-title">FORMAL JOB OFFER</div>
+                        <div class="report-title">JOB OFFER LETTER</div>
 
                         <div style="margin-bottom: 20px;">
                             <strong>Date:</strong>
@@ -120,6 +120,22 @@
                 <tr>
                     <td class="label">Employment Type:</td>
                     <td class="value">Full-Time</td>
+                </tr>
+                <tr t-if="o.availability">
+                    <td class="label">Proposed Joining Date:</td>
+                    <td class="value">
+                        <strong>
+                            <span t-field="o.availability"/>
+                        </strong>
+                    </td>
+                </tr>
+                <tr t-if="o.salary_proposed">
+                    <td class="label">Proposed Salary:</td>
+                    <td class="value">
+                        <strong>
+                            <t t-esc="o.salary_proposed" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                        </strong>
+                    </td>
                 </tr>
             </table>
 
