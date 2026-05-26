@@ -1,40 +1,45 @@
-# Recruiter Stage Approval Workflow
+# HR Recruitment Approval Workflow
 
-This Odoo 19 module implements a strict multi-tier validation control system for **Job Positions (`hr.job`)**, ensuring that vacancy recruitment workflows and website publishing operations follow formal corporate approval structures.
+This Odoo 19 module provides a secure and automated multi-level approval system for Job Positions, along with a dynamic recruitment pipeline that supports professional Offer Letter generation and email automation.
 
-## 📌 Features
+---
 
-- **Sequential Status Flow:** Controls the structural lifecycle of recruitment positions:
-  `Draft` ➡️ `1st Stage` ➡️ `2nd Stage` ➡️ `Final Stage` ➡️ `Recruitment In Progress (Open)` / `Refused`
-- **Strict Server-Side Validation:** Python validation guards intercept unauthorized `write` or status mutations, preventing bypass attempts even if front-end UI buttons are made visible.
-- **Automated Activity Delegation:** Seamlessly integrates with `mail.activity.mixin` to schedule deadlined To-Do items inside the assignee’s upper navigation bar icon instantly when a record requires action.
-- **Enterprise-Ready Auditing:** Fully leverages Odoo Chatter tracking to archive sequential history stamps showing precisely who authorized or refused requests and when.
-- **Safe UI Adaptation:** Automatically adapts to Odoo 19’s default responsive layout without interfering with side-chatter responsive rendering configurations.
+## 📌 Key Features
+
+* **Multi-Level Job Approval:** Enforces a three-tier approval hierarchy (**1st Stage ➔ 2nd Stage ➔ Final Stage**) before a job position can be published.
+* **Automated Workflow:** Uses Odoo `mail.activity` to notify the designated approvers via the system's activity bar (clock icon).
+* **Candidate Pipeline:** Manages the recruitment flow from initial application to contract proposal.
+* **Dynamic Offer Letters:** Generates professional, ready-to-print PDF offer letters with auto-filled candidate and job details.
+* **Email Automation:** Built-in integration to send offer letters directly to candidates via email using pre-configured templates.
 
 ---
 
 ## 🛠️ Workflow Lifecycle
 
-1. **Draft:** The Job Position profile is initialized. Specific system users must be designated as the **1st Stage Approver**, **2nd Stage Approver**, and **Final Approver**.
-2. **1st Stage:** Submitted for review. An automated activity is assigned to the designated *1st Stage Approver*.
-3. **2nd Stage:** Upon approval, the pending task is marked as complete, and a new activity is dynamically generated for the *2nd Stage Approver*.
-4. **Final Stage:** Sent to the *Final Approver*. At this checkpoint, the system gives the authorized user exclusive rights to either **Publish & Start** or **Refuse** the request.
-5. **Open / Refused:** The final termination point. Publishing triggers the automatic synchronization switch for `website_published` to expose the link online.
+### 1. Job Approval
+1.  **Creation:** HR creates a Job Position and assigns specific approvers for each stage.
+2.  **Submission:** The user submits the job for the first level of approval.
+3.  **Approval Chain:** Each designated approver receives a system notification, reviews the request, and approves it to move to the next stage.
+4.  **Publishing:** Upon final approval, the Job Position becomes eligible for website publishing.
+
+### 2. Recruitment & Offer Generation
+* **Pipeline Management:** Recruiters move applicants through the standard Odoo recruitment pipeline (**Qualification ➔ Interview ➔ Contract Proposal**).
+* **Offer Letter:** Once at the 'Contract Proposal' stage, the "Print offer" button generates a custom PDF including:
+    * Company Header & Logo.
+    * Candidate details.
+    * Job specifics (Department, Title, Employment Type).
+    * Proposed Joining Date (from the *Availability* field).
+    * Salary package.
 
 ---
 
 ## ⚙️ Installation & Configuration
 
-### Prerequisites
-Make sure your custom addons directory contains this module and that the Odoo base recruitment components are active:
-- `hr_recruitment`
-- `website_hr_recruitment`
-- `mail`
+1.  **Prerequisites:** Ensure your Odoo instance has `hr_recruitment` and `mail` modules installed.
+2.  **Path:** Copy the `hr_recruitment_approval` directory into your custom addons folder.
+3.  **Upgrade:** Restart your Odoo server and update your apps list.
+4.  **Install:** Install the module from the Apps dashboard or via terminal:
 
-### Module Setup
-1. Copy the `recruiter_stage_approval` directory into your configured Odoo custom addons repository path.
-2. Restart your Odoo server instance.
-3. Access your database backend, activate **Developer Mode**, navigate to **Apps**, and execute **Update Apps List**.
-4. Search for `Recruiter Stage Approval Workflow` and click **Install** or update via your terminal using:
-   ```bash
-   ./odoo-bin -c odoo.conf -d your_db_name -u recruiter_stage_approval
+```bash
+./odoo-bin -c odoo.conf -d your_db_name -u hr_recruitment_approval
+```
