@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kpi_template_form" model="ir.ui.view">
+        <field name="name">kpi.template.form</field>
+        <field name="model">kpi.template</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="department_id"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                    </group>
+                    <notebook>
+                        <page string="Skills">
+                            <field name="line_ids" context="{'default_template_id': active_id}">
+                                <tree editable="bottom">
+                                    <field name="skill_type"/>
+                                    <field name="skill_name"/>
+                                    <field name="weight"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_kpi_template" model="ir.actions.act_window">
+        <field name="name">KPI Templates</field>
+        <field name="res_model">kpi.template</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

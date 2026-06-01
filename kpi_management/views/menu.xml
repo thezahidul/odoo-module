@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_kpi_root" 
+              name="KPI Management" 
+              sequence="100" 
+              web_icon="hr,static/description/icon.png"/>
+
+    <menuitem id="menu_kpi_configuration" 
+              name="Configuration" 
+              parent="menu_kpi_root" 
+              sequence="10"/>
+
+    <menuitem id="menu_kpi_template" 
+              name="KPI Templates" 
+              parent="menu_kpi_configuration" 
+              action="action_kpi_template" 
+              sequence="1"/>
+
+    <menuitem id="menu_kpi_evaluation_main" 
+              name="Evaluations" 
+              parent="menu_kpi_root" 
+              sequence="20"/>
+
+    <menuitem id="menu_kpi_evaluation_list" 
+              name="All Evaluations" 
+              parent="menu_kpi_evaluation_main" 
+              action="action_kpi_evaluation" 
+              sequence="1"/>
+</odoo>
