@@ -4,6 +4,7 @@ from odoo.exceptions import ValidationError
 class KpiTemplateLine(models.Model):
     _name = 'kpi.template.line'
     _description = 'KPI Template Line'
+    _rec_name = 'skill_name'
 
     template_id = fields.Many2one('kpi.template', string="Template", ondelete='cascade')
     skill_type = fields.Selection([
