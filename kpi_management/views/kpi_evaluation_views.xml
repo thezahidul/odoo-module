@@ -15,10 +15,10 @@
                     <notebook>
                         <page string="Score Details">
                             <field name="line_ids">
-                                <tree editable="bottom">
+                                <list editable="bottom">
                                     <field name="skill_line_id" domain="[('template_id', '=', parent.template_id)]"/>
                                     <field name="achieved_score"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                     </notebook>
@@ -30,6 +30,6 @@
     <record id="action_kpi_evaluation" model="ir.actions.act_window">
         <field name="name">KPI Evaluations</field>
         <field name="res_model">kpi.evaluation</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 </odoo>

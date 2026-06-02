@@ -38,3 +38,10 @@ class KpiTemplate(models.Model):
                     raise ValidationError(
                         _("Only one active KPI template is allowed per department!")
                     )
+
+    def action_activate(self):
+        # অন্যান্য ডিপার্টমেন্টের টেমপ্লেট আর্কিভ করে ফেলা (অপশনাল)
+        self.state = 'active'
+
+    def action_archive(self):
+        self.state = 'archived'

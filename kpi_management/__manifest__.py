@@ -12,6 +12,7 @@
         'security/ir.model.access.csv',
         'views/kpi_template_views.xml',
         'views/kpi_evaluation_views.xml',
+        'views/menu.xml',
     ],
     'installable': True,
     'application': True,

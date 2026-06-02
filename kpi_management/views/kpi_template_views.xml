@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
     <record id="view_kpi_template_form" model="ir.ui.view">
         <field name="name">kpi.template.form</field>
         <field name="model">kpi.template</field>
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <field name="state" widget="statusbar"/>
+                    <button name="action_activate" string="Activate" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_archive" string="Archive" type="object" invisible="state == 'archived'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,active,archived"/>
                 </header>
                 <sheet>
                     <group>
@@ -16,12 +19,12 @@
                     </group>
                     <notebook>
                         <page string="Skills">
-                            <field name="line_ids" context="{'default_template_id': active_id}">
-                                <tree editable="bottom">
+                            <field name="line_ids">
+                                <list editable="bottom">
                                     <field name="skill_type"/>
                                     <field name="skill_name"/>
                                     <field name="weight"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                     </notebook>
@@ -32,6 +35,6 @@
     <record id="action_kpi_template" model="ir.actions.act_window">
         <field name="name">KPI Templates</field>
         <field name="res_model">kpi.template</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 </odoo>
