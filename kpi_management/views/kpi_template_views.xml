@@ -21,14 +21,15 @@
                         <page string="Skills">
                             <field name="line_ids">
                                 <list editable="bottom">
-                                    <field name="skill_type"/>
-                                    <field name="skill_name"/>
+                                    <field name="skill_type" readonly="1"/>
+                                    <field name="skill_id" domain="[('id', 'not in', parent.selected_skill_ids)]"/>
                                     <field name="weight"/>
                                 </list>
                             </field>
                         </page>
                     </notebook>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>
@@ -41,6 +42,7 @@
                 <field name="name"/>
                 <field name="department_id"/>
                 <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'active'"/>
+                <field name="write_date" string="Last Updated"/>
             </list>
         </field>
     </record>

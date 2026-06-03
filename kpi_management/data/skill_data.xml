@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="skill_attendance" model="kpi.skill.library">
+        <field name="name">Attendance</field>
+        <field name="skill_type">soft</field>
+    </record>
+    <record id="skill_behavior" model="kpi.skill.library">
+        <field name="name">Behavior</field>
+        <field name="skill_type">soft</field>
+    </record>
+    <record id="skill_coding_logic" model="kpi.skill.library">
+        <field name="name">Coding Logic</field>
+        <field name="skill_type">hard</field>
+    </record>
+</odoo>

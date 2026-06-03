@@ -3,3 +3,4 @@ access_kpi_template,access.kpi.template,model_kpi_template,base.group_user,1,1,1
 access_kpi_template_line,access.kpi.template.line,model_kpi_template_line,base.group_user,1,1,1,1
 access_kpi_evaluation,access.kpi.evaluation,model_kpi_evaluation,base.group_user,1,1,1,1
 access_kpi_evaluation_line,access.kpi.evaluation.line,model_kpi_evaluation_line,base.group_user,1,1,1,1
+access_kpi_skill_library,kpi.skill.library,model_kpi_skill_library,base.group_user,1,0,0,0

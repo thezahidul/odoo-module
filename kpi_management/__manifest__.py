@@ -7,9 +7,11 @@
     'depends': [
         'base',
         'hr',
+        'mail',
     ],
     'data': [
         'security/ir.model.access.csv',
+        'data/skill_data.xml',
         'views/kpi_template_views.xml',
         'views/kpi_evaluation_views.xml',
         'views/menu.xml',
