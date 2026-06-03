@@ -17,7 +17,7 @@
                         <page string="Score Details">
                             <field name="line_ids">
                                 <list editable="bottom">
-                                    <field name="skill_line_id" domain="[('template_id', '=', parent.template_id)]"/>
+                                    <field name="skill_id" domain="[('id', 'not in', parent.evaluation_skill_ids)]"/>
                                     <field name="achieved_score"/>
                                 </list>
                             </field>
@@ -57,7 +57,8 @@
                                     <field name="template_id"/>
                                 </div>
                                 <div class="mt-2 text-primary">
-                                    <strong>Score: </strong><field name="total_score"/>
+                                    <strong>Score: </strong>
+                                    <field name="total_score"/>
                                 </div>
                                 <div class="text-muted">
                                     <field name="evaluation_date"/>

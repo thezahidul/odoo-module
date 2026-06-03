@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from odoo.exceptions import ValidationError
 
 class KpiTemplateLine(models.Model):
     _name = 'kpi.template.line'
@@ -16,3 +17,21 @@ class KpiTemplateLine(models.Model):
         # Whenever the user selects a skill, automatic typing will occur.
         if self.skill_id:
             self.skill_type = self.skill_id.skill_type
+        
+    def action_activate(self):
+        
+        for record in self:
+            total_weight = sum(record.line_ids.mapped('weight'))
+            if total_weight != 100:
+                raise ValidationError(_("The sum of all skill weights must be 100! Current sum: %s") % total_weight)
+        
+        now = fields.Datetime.now()
+        previous_active = self.search([
+            ("department_id", "=", self.department_id.id),
+            ("state", "=", "active"),
+            ("id", "!=", self.id)
+        ])
+        if previous_active:
+            previous_active.write({'state': 'archived', 'archived_date': now})
+            
+        self.write({'state': 'active', 'activated_date': now})

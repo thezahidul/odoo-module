@@ -16,6 +16,8 @@
                         <field name="name"/>
                         <field name="department_id"/>
                         <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="total_weight" readonly="1" decoration-info="total_weight != 100"/>
+                        <field name="remaining_weight" readonly="1" decoration-danger="remaining_weight != 0" decoration-success="remaining_weight == 0"/>
                     </group>
                     <notebook>
                         <page string="Skills">

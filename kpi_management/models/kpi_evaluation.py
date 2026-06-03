@@ -23,6 +23,8 @@ class KpiEvaluation(models.Model):
         string="Total Score", compute="_compute_total_score", store=True
     )
 
+    evaluation_skill_ids = fields.Many2many('kpi.skill.library', compute='_compute_evaluation_skills')
+
     @api.depends("line_ids.achieved_score")
     def _compute_total_score(self):
         for record in self:
@@ -38,3 +40,8 @@ class KpiEvaluation(models.Model):
             "This template has already been evaluated for this employee on this date.",
         )
     ]
+
+    @api.depends('line_ids.skill_id')
+    def _compute_evaluation_skills(self):
+        for record in self:
+            record.evaluation_skill_ids = record.line_ids.mapped('skill_id')
