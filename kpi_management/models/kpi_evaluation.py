@@ -25,12 +25,17 @@ class KpiEvaluation(models.Model):
 
     evaluation_skill_ids = fields.Many2many('kpi.skill.library', compute='_compute_evaluation_skills')
 
-    @api.depends("line_ids.achieved_score")
+    @api.depends('line_ids.achieved_score', 'line_ids.skill_id')
     def _compute_total_score(self):
         for record in self:
             total = 0.0
             for line in record.line_ids:
-                total += line.achieved_score * (line.skill_line_id.weight / 100)
+                template_line = record.template_id.line_ids.filtered(
+                    lambda l: l.skill_id == line.skill_id
+                )
+                weight = template_line.weight if template_line else 0.0
+                total += line.achieved_score * (weight / 100)
+            
             record.total_score = total
 
     _sql_constraints = [
