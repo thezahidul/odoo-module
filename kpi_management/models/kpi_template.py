@@ -1,7 +1,6 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 
-
 class KpiTemplate(models.Model):
     _name = "kpi.template"
     _description = "KPI Template"

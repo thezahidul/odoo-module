@@ -50,3 +50,17 @@ class KpiEvaluation(models.Model):
     def _compute_evaluation_skills(self):
         for record in self:
             record.evaluation_skill_ids = record.line_ids.mapped('skill_id')
+
+    @api.onchange('template_id')
+    def _onchange_template_id(self):
+        if self.template_id:
+            self.line_ids = [(5, 0, 0)]
+            
+            # Copying data from template lines
+            new_lines = []
+            for line in self.template_id.line_ids:
+                new_lines.append((0, 0, {
+                    'skill_id': line.skill_id.id,
+                    'achieved_score': 0.0,
+                }))
+            self.line_ids = new_lines
