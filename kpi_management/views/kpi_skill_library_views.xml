@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_skill_library" model="ir.actions.act_window">
+        <field name="name">Skill Library</field>
+        <field name="res_model">kpi.skill.library</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new skill!
+            </p>
+        </field>
+    </record>
+
+    <record id="view_skill_library_list" model="ir.ui.view">
+        <field name="name">kpi.skill.library.list</field>
+        <field name="model">kpi.skill.library</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="skill_type"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_skill_library_form" model="ir.ui.view">
+        <field name="name">kpi.skill.library.form</field>
+        <field name="model">kpi.skill.library</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="skill_type"/>
+                        <field name="active" widget="boolean_toggle"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_skill_library_search" model="ir.ui.view">
+        <field name="name">kpi.skill.library.search</field>
+        <field name="model">kpi.skill.library</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+</odoo>

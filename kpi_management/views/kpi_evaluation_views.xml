@@ -34,6 +34,7 @@
         <field name="arch" type="xml">
             <list>
                 <field name="employee_id"/>
+                <field name="department_id"/>
                 <field name="template_id"/>
                 <field name="evaluation_date"/>
                 <field name="total_score"/>
@@ -53,6 +54,9 @@
                                 <strong class="o_kanban_record_title">
                                     <field name="employee_id"/>
                                 </strong>
+                                <div class="text-muted">
+                                    <field name="department_id"/>
+                                </div>
                                 <div class="text-muted">
                                     <field name="template_id"/>
                                 </div>
@@ -76,4 +80,17 @@
         <field name="res_model">kpi.evaluation</field>
         <field name="view_mode">list,kanban,form</field>
     </record>
+
+    <record id="view_kpi_evaluation_search" model="ir.ui.view">
+        <field name="name">kpi.evaluation.search</field>
+        <field name="model">kpi.evaluation</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <filter string="Department" name="group_by_department" context="{'group_by': 'department_id'}"/>
+            </search>
+        </field>
+    </record>
+
 </odoo>

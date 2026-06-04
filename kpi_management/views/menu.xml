@@ -10,4 +10,7 @@
     <menuitem id="menu_kpi_template" name="KPI Templates" parent="menu_kpi_configuration" action="action_kpi_template" sequence="1"/>
 
     <menuitem id="menu_kpi_evaluation_list" name="All Evaluations" parent="menu_kpi_evaluation_main" action="action_kpi_evaluation" sequence="1"/>
+
+    <menuitem id="menu_skill_library" name="Skill Library" parent="menu_kpi_configuration" action="action_skill_library" sequence="10"/>
+    
 </odoo>

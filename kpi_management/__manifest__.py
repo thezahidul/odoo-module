@@ -13,6 +13,7 @@
         'data/skill_data.xml',
         'views/kpi_template_views.xml',
         'views/kpi_evaluation_views.xml',
+        'views/kpi_skill_library_views.xml',
         'views/menu.xml',
     ],
     'installable': True,

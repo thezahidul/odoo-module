@@ -25,6 +25,14 @@ class KpiEvaluation(models.Model):
 
     evaluation_skill_ids = fields.Many2many('kpi.skill.library', compute='_compute_evaluation_skills')
 
+    department_id = fields.Many2one(
+        'hr.department', 
+        string="Department", 
+        related='employee_id.department_id', 
+        store=True, 
+        readonly=True
+    )
+
     @api.depends('line_ids.achieved_score', 'line_ids.skill_id')
     def _compute_total_score(self):
         for record in self:
