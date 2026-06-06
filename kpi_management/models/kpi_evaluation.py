@@ -1,4 +1,5 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 
 
 class KpiEvaluation(models.Model):
@@ -46,13 +47,30 @@ class KpiEvaluation(models.Model):
             
             record.total_score = total
 
-    _sql_constraints = [
-        (
-            "unique_evaluation",
-            "unique(employee_id, template_id, evaluation_date)",
-            "This template has already been evaluated for this employee on this date.",
-        )
-    ]
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            self._check_duplicate_evaluation(vals)
+        return super().create(vals_list)
+
+    def write(self, vals):
+        for record in self:
+            check_vals = {field: vals.get(field, getattr(record, field)) 
+                          for field in ['employee_id', 'template_id', 'evaluation_date']}
+            self._check_duplicate_evaluation(check_vals, exclude_id=record.id)
+        return super().write(vals)
+
+    def _check_duplicate_evaluation(self, vals, exclude_id=None):
+        domain = [
+            ('employee_id', '=', vals.get('employee_id')),
+            ('template_id', '=', vals.get('template_id')),
+            ('evaluation_date', '=', vals.get('evaluation_date')),
+        ]
+        if exclude_id:
+            domain.append(('id', '!=', exclude_id))
+            
+        if self.search_count(domain) > 0:
+            raise ValidationError(_("This template has already been evaluated for this employee on this date."))
 
     @api.depends('line_ids.skill_id')
     def _compute_evaluation_skills(self):

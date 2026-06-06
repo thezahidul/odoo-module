@@ -8,7 +8,7 @@ class KpiTemplate(models.Model):
 
     name = fields.Char(string="Template Name", required=True)
     company_id = fields.Many2one(
-        "res.company", string="Company", default=lambda self: self.env.company
+        "res.company", string="Company", default=lambda self: self.env.company, required=True,
     )
     department_id = fields.Many2one("hr.department", string="Department", required=True)
     state = fields.Selection(
@@ -32,22 +32,6 @@ class KpiTemplate(models.Model):
     activated_date = fields.Datetime(string="Activated Date", readonly=True)
     archived_date = fields.Datetime(string="Archived Date", readonly=True)
 
-    company_id = fields.Many2one(
-        "res.company",
-        string="Company",
-        default=lambda self: self.env.company,
-        required=True,
-    )
-
-    # SQL Constraints are for data integrity at DB level.
-    # Since active status is conditional, we use Python constraints.
-    _sql_constraints = [
-        (
-            "name_company_unique",
-            "UNIQUE(name, company_id)",
-            "Template name must be unique per company!",
-        )
-    ]
 
     @api.depends("line_ids.weight")
     def _compute_total_weight(self):

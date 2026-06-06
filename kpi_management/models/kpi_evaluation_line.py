@@ -10,17 +10,16 @@ class KpiEvaluationLine(models.Model):
     skill_id = fields.Many2one('kpi.skill.library', string="Skill", required=True)
     achieved_score = fields.Float(string="Achieved Score (0-100)")
 
-    @api.constrains('skill_id', 'evaluation_id')
-    def _check_unique_skill(self):
-        for line in self:
-            # Checking if the current evaluation has the same skill or not
-            count = self.env['kpi.evaluation.line'].search_count([
-                ('evaluation_id', '=', line.evaluation_id.id),
-                ('skill_id', '=', line.skill_id.id),
-                ('id', '!=', line.id)
+    @api.constrains('name', 'company_id')
+    def _check_unique_name_company(self):
+        for record in self:
+            duplicates = self.env['kpi.template'].search([
+                ('name', '=', record.name),
+                ('company_id', '=', record.company_id.id),
+                ('id', '!=', record.id)
             ])
-            if count > 0:
-                raise ValidationError("This skill has already been added. Please remove the duplicate entry.")
+            if duplicates:
+                raise ValidationError("A template with this name already exists for this company!")
             
     @api.constrains('achieved_score')
     def _check_score_range(self):
