@@ -11,6 +11,7 @@
                         <field name="employee_id"/>
                         <field name="template_id"/>
                         <field name="evaluation_date"/>
+                        <field name="attendance_score" readonly="1"/>
                         <field name="total_score" readonly="1"/>
                     </group>
                     <notebook>

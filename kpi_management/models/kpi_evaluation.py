@@ -1,3 +1,4 @@
+import calendar
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 
@@ -20,9 +21,9 @@ class KpiEvaluation(models.Model):
     line_ids = fields.One2many(
         "kpi.evaluation.line", "evaluation_id", string="Score Details"
     )
-    total_score = fields.Float(
-        string="Total Score", compute="_compute_total_score", store=True
-    )
+    attendance_score = fields.Float(string="Attendance Score", compute="_compute_attendance_score", store=True)
+    total_score = fields.Float(string="Total Score", compute="_compute_total_score", store=True)
+
 
     evaluation_skill_ids = fields.Many2many('kpi.skill.library', compute='_compute_evaluation_skills')
 
@@ -34,18 +35,52 @@ class KpiEvaluation(models.Model):
         readonly=True
     )
 
-    @api.depends('line_ids.achieved_score', 'line_ids.skill_id')
+    @api.depends('evaluation_date', 'employee_id')
+    def _compute_attendance_score(self):
+        for record in self:
+            if not record.evaluation_date or not record.employee_id:
+                record.attendance_score = 0.0
+                continue
+
+            target_year = record.evaluation_date.year
+            target_month = record.evaluation_date.month
+            
+            attendances = self.env['hr.attendance'].search([
+                ('employee_id', '=', record.employee_id.id)
+            ])
+            
+            monthly_attendances = attendances.filtered(
+                lambda a: a.check_in.year == target_year and a.check_in.month == target_month
+            )
+            
+            present_days = len(monthly_attendances)
+            days_in_month = calendar.monthrange(target_year, target_month)[1]
+            
+            record.attendance_score = (present_days / days_in_month) * 100
+
+    @api.depends('line_ids.achieved_score', 'attendance_score')
     def _compute_total_score(self):
         for record in self:
             total = 0.0
             for line in record.line_ids:
-                template_line = record.template_id.line_ids.filtered(
-                    lambda l: l.skill_id == line.skill_id
-                )
+                template_line = record.template_id.line_ids.filtered(lambda l: l.skill_id == line.skill_id)
                 weight = template_line.weight if template_line else 0.0
                 total += line.achieved_score * (weight / 100)
             
-            record.total_score = total
+            record.total_score = max(0.0, total)
+
+    # @api.depends('line_ids.achieved_score', 'line_ids.skill_id')
+    # def _compute_total_score(self):
+    #     for record in self:
+    #         total = 0.0
+    #         for line in record.line_ids:
+    #             template_line = record.template_id.line_ids.filtered(
+    #                 lambda l: l.skill_id == line.skill_id
+    #             )
+    #             weight = template_line.weight if template_line else 0.0
+    #             total += line.achieved_score * (weight / 100)
+            
+    #         record.total_score = total
 
     @api.model_create_multi
     def create(self, vals_list):

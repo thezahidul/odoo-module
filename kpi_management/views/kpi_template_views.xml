@@ -23,8 +23,8 @@
                         <page string="Skills">
                             <field name="line_ids">
                                 <list editable="bottom">
-                                    <field name="skill_type" readonly="1"/>
                                     <field name="skill_id" domain="[('id', 'not in', parent.selected_skill_ids)]"/>
+                                    <field name="skill_type" readonly="1"/>
                                     <field name="weight"/>
                                 </list>
                             </field>
