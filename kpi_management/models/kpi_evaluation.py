@@ -69,18 +69,6 @@ class KpiEvaluation(models.Model):
             
             record.total_score = max(0.0, total)
 
-    # @api.depends('line_ids.achieved_score', 'line_ids.skill_id')
-    # def _compute_total_score(self):
-    #     for record in self:
-    #         total = 0.0
-    #         for line in record.line_ids:
-    #             template_line = record.template_id.line_ids.filtered(
-    #                 lambda l: l.skill_id == line.skill_id
-    #             )
-    #             weight = template_line.weight if template_line else 0.0
-    #             total += line.achieved_score * (weight / 100)
-            
-    #         record.total_score = total
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -117,11 +105,37 @@ class KpiEvaluation(models.Model):
         if self.template_id:
             self.line_ids = [(5, 0, 0)]
             
-            # Copying data from template lines
+            auto_score = self._calculate_current_attendance_score()
+            
             new_lines = []
             for line in self.template_id.line_ids:
+                score = 0.0
+                if line.skill_id.name and line.skill_id.name.lower() == 'attendance':
+                    score = auto_score
+                
                 new_lines.append((0, 0, {
                     'skill_id': line.skill_id.id,
-                    'achieved_score': 0.0,
+                    'achieved_score': score,
                 }))
+            
             self.line_ids = new_lines
+
+    def _calculate_current_attendance_score(self):
+            if not self.evaluation_date or not self.employee_id:
+                return 0.0
+            
+            target_year = self.evaluation_date.year
+            target_month = self.evaluation_date.month
+            
+            attendances = self.env['hr.attendance'].search([
+                ('employee_id', '=', self.employee_id.id)
+            ])
+            
+            monthly_attendances = attendances.filtered(
+                lambda a: a.check_in.year == target_year and a.check_in.month == target_month
+            )
+            
+            present_days = len(monthly_attendances)
+            days_in_month = calendar.monthrange(target_year, target_month)[1]
+            
+            return (present_days / days_in_month) * 100
