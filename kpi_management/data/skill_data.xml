@@ -8,8 +8,4 @@
         <field name="name">Behavior</field>
         <field name="skill_type">soft</field>
     </record>
-    <record id="skill_coding_logic" model="kpi.skill.library">
-        <field name="name">Coding Logic</field>
-        <field name="skill_type">growth</field>
-    </record>
 </odoo>

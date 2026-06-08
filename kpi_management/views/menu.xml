@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <menuitem id="menu_kpi_root" name="KPI Management" sequence="100" web_icon="hr,static/description/icon.png"/>
+    <menuitem id="menu_kpi_root" name="KPI Management" sequence="100" web_icon="kpi_management,static/description/icon.png"/>
 
     <menuitem id="menu_kpi_configuration" name="Configuration" parent="menu_kpi_root" sequence="20"/>
 
