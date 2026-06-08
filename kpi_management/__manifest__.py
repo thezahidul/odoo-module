@@ -4,6 +4,7 @@
     'category': 'Human Resources',
     'summary': 'KPI configuration and employee performance evaluation system.',
     'author': 'Zahidul Islam',
+    'images': ['static/src/img/icon.png'],
     'depends': [
         'base',
         'hr',
