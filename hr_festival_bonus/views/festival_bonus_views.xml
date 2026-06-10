@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+
+```
+<!-- List View -->
+<record id="view_festival_bonus_batch_list" model="ir.ui.view">
+    <field name="name">festival.bonus.batch.list</field>
+    <field name="model">festival.bonus.batch</field>
+    <field name="arch" type="xml">
+        <list>
+            <field name="name"/>
+            <field name="bonus_date"/>
+            <field name="bonus_percentage"/>
+            <field name="state"/>
+        </list>
+    </field>
+</record>
+
+<!-- Form View -->
+<record id="view_festival_bonus_batch_form" model="ir.ui.view">
+    <field name="name">festival.bonus.batch.form</field>
+    <field name="model">festival.bonus.batch</field>
+    <field name="arch" type="xml">
+
+        <form string="Festival Bonus">
+
+            <header>
+
+                <button
+                    name="action_confirm"
+                    string="Confirm"
+                    type="object"
+                    class="btn-primary"
+                    invisible="state != 'draft'"
+                />
+
+                <field
+                    name="state"
+                    widget="statusbar"
+                />
+
+            </header>
+
+            <sheet>
+
+                <group>
+
+                    <field name="name"/>
+
+                    <field name="bonus_date"/>
+
+                    <field name="bonus_percentage"/>
+
+                </group>
+
+                <notebook>
+
+                    <page string="Bonus Lines">
+
+                        <field name="line_ids">
+
+                            <list editable="bottom">
+
+                                <field name="employee_id"/>
+
+                                <field name="basic_salary"/>
+
+                                <field name="bonus_amount"/>
+
+                            </list>
+
+                        </field>
+
+                    </page>
+
+                </notebook>
+
+            </sheet>
+
+            <chatter/>
+
+        </form>
+
+    </field>
+</record>
+
+<!-- Action -->
+<record id="action_festival_bonus_batch" model="ir.actions.act_window">
+    <field name="name">Festival Bonus</field>
+    <field name="res_model">festival.bonus.batch</field>
+    <field name="view_mode">list,form</field>
+</record>
+
+<!-- Root Menu -->
+<menuitem
+    id="menu_festival_bonus_root"
+    name="Festival Bonus"
+/>
+
+<!-- Sub Menu -->
+<menuitem
+    id="menu_festival_bonus_batch"
+    name="Bonus Batches"
+    parent="menu_festival_bonus_root"
+    action="action_festival_bonus_batch"
+/>
+```
+
+</odoo>
