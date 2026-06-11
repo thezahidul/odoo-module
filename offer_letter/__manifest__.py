@@ -2,6 +2,7 @@
     'name': 'Offer Letter Management',
     'version': '1.0',
     'depends': ['hr_recruitment', 'mail'],
+    'author': 'Zahidul Islam',
     'data': [
         'views/hr_applicant_view.xml',
         'reports/offer_letter_report.xml',
@@ -14,5 +15,6 @@
     },
     'installable': True,
     'application': True,
-    'auto_install': False
+    'auto_install': False,
+    'license': 'LGPL-3',
 }

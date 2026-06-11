@@ -38,7 +38,7 @@ class HrEmployee(models.Model):
         for employee in self:
             # Filter out cancelled records from the count and state check
             records = employee.gratuity_ids.filtered(
-                lambda r: r.state != 'cancel'  # ওডু-র স্ট্যান্ডার্ড 'cancel' স্টেট সাধারণত 'cancelled' এর চেয়ে বেশি ব্যবহৃত হয়, আপনার মডেলে যা আছে তা মিলিয়ে নেবেন
+                lambda r: r.state != 'cancel'
             )
             employee.gratuity_count = len(records)
             
