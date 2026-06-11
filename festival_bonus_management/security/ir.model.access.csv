@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_festival_bonus_config,festival.bonus.config,model_festival_bonus_config,base.group_user,1,1,1,0
+access_festival_bonus_line,festival.bonus.line,model_festival_bonus_line,base.group_user,1,1,1,0
