@@ -15,8 +15,6 @@ class FestivalBonusConfig(models.Model):
     company_id = fields.Many2one('res.company', string="Company", default=lambda self: self.env.company)
     bonus_line_ids = fields.One2many('festival.bonus.line', 'bonus_id', string="Bonus Lines")
     
-    # 2. Compute methods (if any)
-    
     # 3. Business Logic Methods (Action buttons)
     def action_confirm_bonus(self):
         self.ensure_one()
