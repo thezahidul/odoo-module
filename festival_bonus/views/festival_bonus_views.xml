@@ -5,17 +5,14 @@
         <field name="name">festival.bonus.config.list</field>
         <field name="model">festival.bonus.config</field>
         <field name="arch" type="xml">
-            <list decoration-success="state == 'confirmed'"
-                  decoration-muted="state == 'draft'">
+            <list decoration-success="state == 'confirmed'" decoration-muted="state == 'draft'">
                 <field name="name" string="Festival Name"/>
                 <field name="bonus_month" string="Month"/>
                 <field name="bonus_year" string="Year" widget="char"/>
                 <field name="salary_base" string="Salary Base"/>
                 <field name="bonus_percentage" string="Bonus %"/>
                 <field name="total_bonus" string="Total Bonus"/>
-                <field name="state" widget="badge"
-                       decoration-success="state == 'confirmed'"
-                       decoration-warning="state == 'draft'"/>
+                <field name="state" widget="badge" decoration-success="state == 'confirmed'" decoration-warning="state == 'draft'"/>
             </list>
         </field>
     </record>
@@ -27,15 +24,8 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="action_confirm_bonus"
-                            string="Confirm"
-                            type="object"
-                            class="btn-primary"
-                            invisible="state == 'confirmed'"/>
-                    <button name="action_reset_draft"
-                            string="Reset to Draft"
-                            type="object"
-                            invisible="state == 'draft'"/>
+                    <button name="action_confirm_bonus" string="Confirm" type="object" class="btn-primary" invisible="state == 'confirmed'"/>
+                    <button name="action_reset_draft" string="Reset to Draft" type="object" invisible="state == 'draft'"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
@@ -59,26 +49,23 @@
                     <notebook>
                         <page string="Employees">
                             <field name="bonus_line_ids">
-                                <list editable="bottom"
-                                      decoration-success="is_eligible == True"
-                                      decoration-danger="is_eligible == False">
+                                <list editable="bottom" decoration-success="is_eligible == True" decoration-danger="is_eligible == False">
                                     <field name="employee_id"/>
                                     <field name="joining_date" class="text-center"/>
-                                    <field name="service_months"
-                                           string="Service (M)"
-                                           readonly="1"
-                                           class="text-center"/>
-                                    <field name="eligibility_status"
-                                           string="Eligibility"
-                                           readonly="1"
-                                           class="text-center"/>
+                                    <field name="service_months" string="Service (M)" readonly="1" class="text-center"/>
+                                    <field name="eligibility_status" string="Eligibility" readonly="1" class="text-center"/>
                                     <field name="is_eligible" column_invisible="1"/>
                                     <field name="salary_base_amount" class="text-end"/>
-                                    <field name="bonus_amount"
-                                           readonly="1"
-                                           class="text-end"/>
+                                    <field name="bonus_amount" readonly="1" class="text-end"/>
                                 </list>
                             </field>
+                        </page>
+                        <page string="Accounting Settings">
+                            <group>
+                                <field name="journal_id"/>
+                                <field name="expense_account_id"/>
+                                <field name="payable_account_id"/>
+                            </group>
                         </page>
                     </notebook>
                 </sheet>
@@ -95,11 +82,6 @@
     </record>
 
     <!-- Menu -->
-    <menuitem id="menu_festival_bonus_root"
-              name="Festival Bonus"
-              sequence="10"/>
-    <menuitem id="menu_festival_bonus_config"
-              name="Configurations"
-              parent="menu_festival_bonus_root"
-              action="action_festival_bonus"/>
+    <menuitem id="menu_festival_bonus_root" name="Festival Bonus" sequence="10"/>
+    <menuitem id="menu_festival_bonus_config" name="Configurations" parent="menu_festival_bonus_root" action="action_festival_bonus"/>
 </odoo>

@@ -90,6 +90,20 @@ class FestivalBonusConfig(models.Model):
         store=True,
     )
 
+    expense_account_id = fields.Many2one(
+        "account.account",
+        string="Expense Account",
+        domain="[('account_type', '=', 'expense')]",
+    )
+    payable_account_id = fields.Many2one(
+        "account.account",
+        string="Payable Account",
+        domain="[('account_type', '=', 'liability_current')]",
+    )
+    journal_id = fields.Many2one(
+        "account.journal", string="Journal", domain="[('type', '=', 'general')]"
+    )
+
     @api.depends("bonus_line_ids.bonus_amount")
     def _compute_total_bonus(self):
         for rec in self:
@@ -118,3 +132,43 @@ class FestivalBonusConfig(models.Model):
     def action_reset_draft(self):
         self.ensure_one()
         self.state = "draft"
+
+    def action_confirm_bonus(self):
+        self.ensure_one()
+        if not self.bonus_line_ids:
+            raise UserError(_("Please add employees before confirming."))
+
+        if not self.expense_account_id or not self.payable_account_id:
+            raise UserError(
+                _("Please configure the Expense and Payable accounts first.")
+            )
+
+        move_vals = {
+            "journal_id": self.journal_id.id,
+            "date": fields.Date.today(),
+            "ref": _("Festival Bonus: ") + self.name,
+            "line_ids": [
+                (
+                    0,
+                    0,
+                    {
+                        "name": self.name,
+                        "account_id": self.expense_account_id.id,
+                        "debit": self.total_bonus,
+                        "credit": 0,
+                    },
+                ),
+                (
+                    0,
+                    0,
+                    {
+                        "name": self.name,
+                        "account_id": self.payable_account_id.id,
+                        "debit": 0,
+                        "credit": self.total_bonus,
+                    },
+                ),
+            ],
+        }
+        self.env["account.move"].create(move_vals).action_post()
+        self.state = "confirmed"
