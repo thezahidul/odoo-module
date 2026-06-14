@@ -15,6 +15,7 @@
         "security/ir.model.access.csv",
         "views/festival_bonus_wizard_views.xml",
         "views/festival_bonus_views.xml",
+        "views/hr_employee_views.xml",
     ],
     "installable": True,
     "application": True,

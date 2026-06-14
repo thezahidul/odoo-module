@@ -5,10 +5,9 @@
         <field name="model">hr.employee</field>
         <field name="inherit_id" ref="hr.view_employee_form"/>
         <field name="arch" type="xml">
-            <!-- sex field এর পরে religion যোগ করো -->
-            <xpath expr="//field[@name='sex']" position="after">
-                <field name="religion"/>
-            </xpath>
+            <field name="sex" position="after">
+                <field name="religion" string="Religion"/>
+            </field>
         </field>
     </record>
 </odoo>
