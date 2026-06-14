@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- List View -->
     <record id="view_festival_bonus_list" model="ir.ui.view">
         <field name="name">festival.bonus.config.list</field>
         <field name="model">festival.bonus.config</field>
@@ -17,7 +16,6 @@
         </field>
     </record>
 
-    <!-- Form View -->
     <record id="view_festival_bonus_form" model="ir.ui.view">
         <field name="name">festival.bonus.config.form</field>
         <field name="model">festival.bonus.config</field>
@@ -48,8 +46,9 @@
                     </group>
                     <notebook>
                         <page string="Employees">
+                            <button name="action_open_bulk_add_wizard" string="➕ Bulk Add Employees" type="object" class="btn-secondary" invisible="state == 'confirmed'"/>
                             <field name="bonus_line_ids">
-                                <list editable="bottom" decoration-success="is_eligible == True" decoration-danger="is_eligible == False">
+                                <list editable="bottom" multi_edit="1" decoration-success="is_eligible == True" decoration-danger="is_eligible == False">
                                     <field name="employee_id"/>
                                     <field name="joining_date" class="text-center"/>
                                     <field name="service_months" string="Service (M)" readonly="1" class="text-center"/>
@@ -74,14 +73,12 @@
         </field>
     </record>
 
-    <!-- Action -->
     <record id="action_festival_bonus" model="ir.actions.act_window">
         <field name="name">Festival Bonus</field>
         <field name="res_model">festival.bonus.config</field>
         <field name="view_mode">list,form</field>
     </record>
 
-    <!-- Menu -->
     <menuitem id="menu_festival_bonus_root" name="Festival Bonus" sequence="10"/>
     <menuitem id="menu_festival_bonus_config" name="Configurations" parent="menu_festival_bonus_root" action="action_festival_bonus"/>
 </odoo>

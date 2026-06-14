@@ -172,3 +172,16 @@ class FestivalBonusConfig(models.Model):
         }
         self.env["account.move"].create(move_vals).action_post()
         self.state = "confirmed"
+
+    def action_open_bulk_add_wizard(self):
+        self.ensure_one()
+        return {
+            "name": "Add Employees",
+            "type": "ir.actions.act_window",
+            "res_model": "festival.bonus.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {
+                "default_bonus_id": self.id,
+            },
+        }

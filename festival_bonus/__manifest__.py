@@ -13,6 +13,7 @@
     ],
     "data": [
         "security/ir.model.access.csv",
+        "views/festival_bonus_wizard_views.xml",
         "views/festival_bonus_views.xml",
     ],
     "installable": True,

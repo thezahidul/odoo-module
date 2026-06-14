@@ -4,6 +4,19 @@ from odoo import api, fields, models, _
 class HrEmployee(models.Model):
     _inherit = "hr.employee"
 
+    religion = fields.Selection(
+        [
+            ("islam", "Islam"),
+            ("hinduism", "Hinduism"),
+            ("christianity", "Christianity"),
+            ("buddhism", "Buddhism"),
+            ("other", "Other"),
+        ],
+        string="Religion",
+        tracking=True,
+        groups="hr.group_hr_user",
+    )
+
     bonus_line_ids = fields.One2many(
         "festival.bonus.line",
         "employee_id",
