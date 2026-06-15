@@ -125,6 +125,18 @@ class FestivalBonusConfig(models.Model):
 
     def action_confirm_bonus(self):
         self.ensure_one()
+
+        seen = set()
+        to_unlink = self.env["festival.bonus.line"]
+        for line in self.bonus_line_ids:
+            if line.employee_id.id in seen:
+                to_unlink |= line
+            else:
+                seen.add(line.employee_id.id)
+
+        if to_unlink:
+            to_unlink.unlink()
+
         if not self.bonus_line_ids:
             raise UserError(_("Please add employees before confirming."))
 
