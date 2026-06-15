@@ -127,26 +127,18 @@ class FestivalBonusConfig(models.Model):
         self.ensure_one()
         if not self.bonus_line_ids:
             raise UserError(_("Please add employees before confirming."))
-        self.state = "confirmed"
-
-    def action_reset_draft(self):
-        self.ensure_one()
-        self.state = "draft"
-
-    def action_confirm_bonus(self):
-        self.ensure_one()
-        if not self.bonus_line_ids:
-            raise UserError(_("Please add employees before confirming."))
 
         if not self.expense_account_id or not self.payable_account_id:
             raise UserError(
                 _("Please configure the Expense and Payable accounts first.")
             )
 
+        # জার্নাল এন্ট্রি তৈরি (অ্যাকাউন্টেন্ট পরে চেক করে পোস্ট করবে)
         move_vals = {
             "journal_id": self.journal_id.id,
             "date": fields.Date.today(),
             "ref": _("Festival Bonus: ") + self.name,
+            "state": "draft",  # এটি পোস্ট হবে না, ড্রাফট হিসেবে থাকবে
             "line_ids": [
                 (
                     0,
@@ -170,8 +162,14 @@ class FestivalBonusConfig(models.Model):
                 ),
             ],
         }
-        self.env["account.move"].create(move_vals).action_post()
+
+        # এখানে .action_post() সরিয়ে ফেলেছি, তাই এটি ড্রাফট হিসেবে থাকবে
+        self.env["account.move"].create(move_vals)
         self.state = "confirmed"
+
+    def action_reset_draft(self):
+        self.ensure_one()
+        self.state = "draft"
 
     def action_open_bulk_add_wizard(self):
         self.ensure_one()
