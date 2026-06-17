@@ -80,5 +80,5 @@
     </record>
 
     <menuitem id="menu_festival_bonus_root" name="Festival Bonus" sequence="10"/>
-    <menuitem id="menu_festival_bonus_config" name="Configurations" parent="menu_festival_bonus_root" action="action_festival_bonus"/>
+    <menuitem id="menu_festival_bonus_config" parent="menu_festival_bonus_root" action="action_festival_bonus"/>
 </odoo>

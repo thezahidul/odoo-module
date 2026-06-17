@@ -111,7 +111,6 @@ class FestivalBonusConfig(models.Model):
 
     @api.onchange("salary_base")
     def _onchange_salary_base(self):
-        """salary_base change হলে সব existing lines update করো"""
         if not self.bonus_line_ids:
             return
         for line in self.bonus_line_ids:
@@ -145,12 +144,11 @@ class FestivalBonusConfig(models.Model):
                 _("Please configure the Expense and Payable accounts first.")
             )
 
-        # জার্নাল এন্ট্রি তৈরি (অ্যাকাউন্টেন্ট পরে চেক করে পোস্ট করবে)
         move_vals = {
             "journal_id": self.journal_id.id,
             "date": fields.Date.today(),
             "ref": _("Festival Bonus: ") + self.name,
-            "state": "draft",  # এটি পোস্ট হবে না, ড্রাফট হিসেবে থাকবে
+            "state": "draft",
             "line_ids": [
                 (
                     0,
@@ -175,7 +173,6 @@ class FestivalBonusConfig(models.Model):
             ],
         }
 
-        # এখানে .action_post() সরিয়ে ফেলেছি, তাই এটি ড্রাফট হিসেবে থাকবে
         self.env["account.move"].create(move_vals)
         self.state = "confirmed"
 

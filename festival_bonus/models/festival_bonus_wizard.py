@@ -15,7 +15,6 @@ class FestivalBonusWizard(models.TransientModel):
     )
     department_id = fields.Many2one("hr.department", string="Filter by Department")
 
-    # gender → sex (Odoo 19)
     sex = fields.Selection(
         [
             ("male", "Male"),
@@ -41,7 +40,7 @@ class FestivalBonusWizard(models.TransientModel):
         if self.department_id:
             domain.append(("department_id", "=", self.department_id.id))
         if self.sex:
-            domain.append(("sex", "=", self.sex))  # sex field
+            domain.append(("sex", "=", self.sex))
         if self.religion:
             domain.append(("religion", "=", self.religion))
         return domain

@@ -52,7 +52,6 @@ class FestivalBonusLine(models.Model):
     )
 
     def _get_salary_from_payslip(self, employee, salary_base):
-        """salary_base string দিয়ে payslip থেকে salary নাও"""
         if not employee:
             return 0.0
 
