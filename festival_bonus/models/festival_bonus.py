@@ -104,6 +104,8 @@ class FestivalBonusConfig(models.Model):
         "account.journal", string="Journal", domain="[('type', '=', 'general')]"
     )
 
+    move_id = fields.Many2one("account.move", string="Journal Entry", readonly=True)
+
     @api.depends("bonus_line_ids.bonus_amount")
     def _compute_total_bonus(self):
         for rec in self:
@@ -125,6 +127,7 @@ class FestivalBonusConfig(models.Model):
     def action_confirm_bonus(self):
         self.ensure_one()
 
+        # 1. Remove duplicate employees
         seen = set()
         to_unlink = self.env["festival.bonus.line"]
         for line in self.bonus_line_ids:
@@ -132,10 +135,10 @@ class FestivalBonusConfig(models.Model):
                 to_unlink |= line
             else:
                 seen.add(line.employee_id.id)
-
         if to_unlink:
             to_unlink.unlink()
 
+        # 2. Basic validation
         if not self.bonus_line_ids:
             raise UserError(_("Please add employees before confirming."))
 
@@ -144,6 +147,10 @@ class FestivalBonusConfig(models.Model):
                 _("Please configure the Expense and Payable accounts first.")
             )
 
+        if self.total_bonus <= 0:
+            raise UserError(_("Total bonus amount must be greater than zero."))
+
+        # 3. Create new journal entry and link it
         move_vals = {
             "journal_id": self.journal_id.id,
             "date": fields.Date.today(),
@@ -173,11 +180,35 @@ class FestivalBonusConfig(models.Model):
             ],
         }
 
-        self.env["account.move"].create(move_vals)
+        # Create journal entry and save it to the model (your model must have a move_id field)
+        move = self.env["account.move"].create(move_vals)
+        self.move_id = move.id
+
         self.state = "confirmed"
 
     def action_reset_draft(self):
         self.ensure_one()
+
+        # 1. If journal entry exists
+        if self.move_id:
+            # Condition: If the entry is 'posted', it cannot be reset.
+            if self.move_id.state == "posted":
+                raise UserError(
+                    _("Festival bonuses cannot be reset if there are posted entries!")
+                )
+
+            # Condition: If the entry is not in 'cancel' mode, it cannot be reset.
+            if self.move_id.state != "cancel":
+                raise UserError(
+                    _(
+                        "Festival bonuses cannot be reset if the journal entry is not in 'Cancel' mode!"
+                    )
+                )
+
+            # Condition: If the entry is in 'cancel' mode, it can be reset.
+            self.move_id.unlink()
+            self.move_id = False
+
         self.state = "draft"
 
     def action_open_bulk_add_wizard(self):
