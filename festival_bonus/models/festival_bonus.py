@@ -150,40 +150,50 @@ class FestivalBonusConfig(models.Model):
         if self.total_bonus <= 0:
             raise UserError(_("Total bonus amount must be greater than zero."))
 
-        # 3. Create new journal entry and link it
+        # 3. Prepare journal lines
+        move_lines = []
+
+        # Separate debit line for each employee
+        for line in self.bonus_line_ids:
+            move_lines.append(
+                (
+                    0,
+                    0,
+                    {
+                        "name": f"{self.name}",
+                        "partner_id": line.employee_id.work_contact_id.id,
+                        "account_id": self.expense_account_id.id,
+                        "debit": line.bonus_amount,
+                        "credit": 0,
+                    },
+                )
+            )
+
+        # Total amount for a credit line
+        move_lines.append(
+            (
+                0,
+                0,
+                {
+                    "name": f"Total Festival Bonus: {self.name}",
+                    "account_id": self.payable_account_id.id,
+                    "debit": 0,
+                    "credit": self.total_bonus,
+                },
+            )
+        )
+
+        # 4. Create journal entry
         move_vals = {
             "journal_id": self.journal_id.id,
             "date": fields.Date.today(),
             "ref": _("Festival Bonus: ") + self.name,
             "state": "draft",
-            "line_ids": [
-                (
-                    0,
-                    0,
-                    {
-                        "name": self.name,
-                        "account_id": self.expense_account_id.id,
-                        "debit": self.total_bonus,
-                        "credit": 0,
-                    },
-                ),
-                (
-                    0,
-                    0,
-                    {
-                        "name": self.name,
-                        "account_id": self.payable_account_id.id,
-                        "debit": 0,
-                        "credit": self.total_bonus,
-                    },
-                ),
-            ],
+            "line_ids": move_lines,
         }
 
-        # Create journal entry and save it to the model (your model must have a move_id field)
         move = self.env["account.move"].create(move_vals)
         self.move_id = move.id
-
         self.state = "confirmed"
 
     def action_reset_draft(self):
