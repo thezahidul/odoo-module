@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record id="view_festival_bonus_template_list" model="ir.ui.view">
+        <field name="name">festival.bonus.template.list</field>
+        <field name="model">festival.bonus.template</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="bonus_percentage" string="Bonus %"/>
+                <field name="calculation_basis"/>
+                <field name="salary_base"/>
+                <field name="min_amount"/>
+                <field name="max_amount"/>
+                <field name="min_service_months" string="Min Service (M)"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_festival_bonus_template_form" model="ir.ui.view">
+        <field name="name">festival.bonus.template.form</field>
+        <field name="model">festival.bonus.template</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="e.g. Eid Bonus 20%..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Calculation Rule">
+                            <field name="salary_base"/>
+                            <field name="bonus_percentage"/>
+                            <field name="calculation_basis"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="min_amount"/>
+                            <field name="max_amount"/>
+                        </group>
+                        <group string="Eligibility Rule">
+                            <field name="min_service_months"/>
+                        </group>
+                    </group>
+                    <group string="Default Eligibility Filter (used when bulk-adding employees)">
+                        <group>
+                            <field name="company_id"/>
+                            <field name="department_id"/>
+                        </group>
+                        <group>
+                            <field name="job_id"/>
+                            <field name="employee_type"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="note" placeholder="Internal notes about this template..." nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_festival_bonus_template" model="ir.actions.act_window">
+        <field name="name">Bonus Templates</field>
+        <field name="res_model">festival.bonus.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Festival Bonus Template
+            </p>
+            <p>
+                Templates define the bonus calculation rule (percentage, min/max amount,
+                month or day basis) that can be reused across multiple festival bonus runs.
+            </p>
+        </field>
+    </record>
+</odoo>

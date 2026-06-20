@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_festival_bonus_wizard_form" model="ir.ui.view">
+        <field name="name">festival.bonus.wizard.form</field>
+        <field name="model">festival.bonus.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Bulk Add Employees">
+                <group string="Filters">
+                    <field name="company_id"/>
+                    <field name="department_id"/>
+                    <field name="job_id"/>
+                    <field name="employee_type"/>
+                    <field name="sex" string="Gender"/>
+                    <field name="religion"/>
+                </group>
+                <group string="Employees">
+                    <field name="employee_ids"
+                           nolabel="1"
+                           widget="many2many_tags"
+                           placeholder="Select employees..."/>
+                </group>
+                <footer>
+                    <button name="action_add_employees"
+                            string="Add Employees"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

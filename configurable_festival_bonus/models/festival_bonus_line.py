@@ -1,0 +1,189 @@
+from odoo import models, fields, api
+from dateutil.relativedelta import relativedelta
+
+
+class FestivalBonusLine(models.Model):
+    _name = "festival.bonus.line"
+    _description = "Festival Bonus Lines"
+    _rec_name = "employee_id"
+
+    bonus_id = fields.Many2one(
+        "festival.bonus.config",
+        ondelete="cascade",
+        string="Bonus Configuration",
+        index=True,
+    )
+    employee_id = fields.Many2one(
+        "hr.employee",
+        string="Employee",
+        required=True,
+        index=True,
+    )
+    currency_id = fields.Many2one(
+        "res.currency",
+        related="bonus_id.company_id.currency_id",
+        store=True,
+    )
+    joining_date = fields.Date(string="Joining Date")
+    salary_base_amount = fields.Monetary(
+        string="Salary Amount",
+        currency_field="currency_id",
+    )
+
+    # ── Eligibility (computed from joining_date -> bonus date) ──
+    service_months = fields.Integer(
+        string="Service (Months)",
+        compute="_compute_eligibility",
+        store=True,
+    )
+    service_days = fields.Integer(
+        string="Service (Days)",
+        compute="_compute_eligibility",
+        store=True,
+    )
+    is_eligible = fields.Boolean(
+        string="Eligible",
+        compute="_compute_eligibility",
+        store=True,
+    )
+    eligibility_status = fields.Char(
+        string="Status",
+        compute="_compute_eligibility",
+        store=True,
+    )
+
+    # ── Bonus result ──
+    bonus_amount = fields.Monetary(
+        string="Bonus Amount",
+        currency_field="currency_id",
+        compute="_compute_bonus_amount",
+        store=True,
+    )
+    is_clamped = fields.Boolean(
+        string="Amount Adjusted",
+        compute="_compute_bonus_amount",
+        store=True,
+        help="True if the min/max limit was applied instead of the raw percentage calculation.",
+    )
+
+    def _get_salary_from_payslip(self, employee, salary_base):
+        """Confirmed payslip থেকে salary_base field এর value নাও, না পেলে employee.wage"""
+        if not employee:
+            return 0.0
+        if "hr.payslip" in self.env:
+            payslip = self.env["hr.payslip"].search(
+                [
+                    ("employee_id", "=", employee.id),
+                    ("state", "in", ["done", "paid"]),
+                ],
+                order="date_to desc",
+                limit=1,
+            )
+            if payslip and salary_base:
+                return getattr(payslip, salary_base, 0.0) or 0.0
+        return employee.wage or 0.0
+
+    def _get_bonus_reference_date(self):
+        """Bonus month/year এর ১ তারিখ — eligibility এর reference point"""
+        self.ensure_one()
+        if not self.bonus_id.bonus_month or not self.bonus_id.bonus_year:
+            return False
+        return fields.Date.from_string(
+            f"{self.bonus_id.bonus_year}-{int(self.bonus_id.bonus_month):02d}-01"
+        )
+
+    @api.depends(
+        "joining_date",
+        "bonus_id.bonus_month",
+        "bonus_id.bonus_year",
+        "bonus_id.min_service_months",
+    )
+    def _compute_eligibility(self):
+        """
+        Joining date theke bonus date porjonto:
+        - service_months: relativedelta diye month count
+        - service_days: actual calendar day count
+        Template calculation_basis onujayi parer step e kon ta use hobe
+        seta _compute_bonus_amount e thik hoy, kintu duto e ekhane compute kora hoy
+        karon eligibility check always month diye hoy (min_service_months).
+        """
+        for line in self:
+            bonus_date = line._get_bonus_reference_date()
+            if not line.joining_date or not bonus_date:
+                line.service_months = 0
+                line.service_days = 0
+                line.is_eligible = False
+                line.eligibility_status = "No joining date"
+                continue
+
+            delta = relativedelta(bonus_date, line.joining_date)
+            months = delta.years * 12 + delta.months
+            days = (bonus_date - line.joining_date).days
+
+            line.service_months = max(months, 0)
+            line.service_days = max(days, 0)
+
+            required_months = line.bonus_id.min_service_months or 0
+            line.is_eligible = months >= required_months
+            line.eligibility_status = (
+                "✔ Eligible"
+                if line.is_eligible
+                else f"✘ Need {required_months - months} more month(s)"
+            )
+
+    @api.depends(
+        "salary_base_amount",
+        "is_eligible",
+        "service_days",
+        "bonus_id.bonus_percentage",
+        "bonus_id.calculation_basis",
+        "bonus_id.min_amount",
+        "bonus_id.max_amount",
+    )
+    def _compute_bonus_amount(self):
+        for line in self:
+            template = line.bonus_id
+            if (
+                not line.is_eligible
+                or not line.salary_base_amount
+                or not template.bonus_percentage
+            ):
+                line.bonus_amount = 0.0
+                line.is_clamped = False
+                continue
+
+            # ── Step 1: Calculate raw amount per calculation_basis ──
+            if template.calculation_basis == "day":
+                # Day basis: per-day salary x eligible days x percentage
+                per_day_salary = line.salary_base_amount / 30.0
+                calculated = (
+                    per_day_salary * line.service_days * template.bonus_percentage / 100
+                )
+            else:
+                # Month basis: full salary x percentage
+                calculated = line.salary_base_amount * template.bonus_percentage / 100
+
+            # ── Step 2: Clamp between min_amount and max_amount ──
+            final_amount = calculated
+            clamped = False
+
+            if template.min_amount and calculated < template.min_amount:
+                final_amount = template.min_amount
+                clamped = True
+            elif template.max_amount and calculated > template.max_amount:
+                final_amount = template.max_amount
+                clamped = True
+
+            line.bonus_amount = final_amount
+            line.is_clamped = clamped
+
+    @api.onchange("employee_id")
+    def _onchange_employee_id(self):
+        employee = self.employee_id
+        self.joining_date = employee.contract_date_start or False
+        self.salary_base_amount = self._get_salary_from_payslip(
+            employee,
+            self.bonus_id.salary_base,
+        )
+        self._compute_eligibility()
+        self._compute_bonus_amount()

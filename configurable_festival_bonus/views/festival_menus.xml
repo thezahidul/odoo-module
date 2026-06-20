@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Menus -->
+    <menuitem id="menu_festival_bonus_root" name="Festival Bonus" sequence="10"/>
+
+    <menuitem id="menu_festival_bonus_main"
+              name="Festival Bonus"
+              parent="menu_festival_bonus_root"
+              action="action_festival_bonus"
+              sequence="10"/>
+
+    <menuitem id="menu_festival_bonus_template_parent"
+              name="Configuration"
+              parent="menu_festival_bonus_root"
+              sequence="20"/>
+
+    <menuitem id="menu_festival_bonus_template"
+              name="Bonus Templates"
+              parent="menu_festival_bonus_template_parent"
+              action="action_festival_bonus_template"
+              sequence="10"/>
+</odoo>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record id="view_festival_bonus_list" model="ir.ui.view">
+        <field name="name">festival.bonus.config.list</field>
+        <field name="model">festival.bonus.config</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'confirmed'"
+                  decoration-muted="state == 'draft'">
+                <field name="name" string="Festival Name"/>
+                <field name="bonus_month" string="Month"/>
+                <field name="bonus_year" string="Year" widget="char"/>
+                <field name="template_id"/>
+                <field name="bonus_percentage" string="Bonus %"/>
+                <field name="calculation_basis"/>
+                <field name="total_bonus"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'confirmed'"
+                       decoration-warning="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_festival_bonus_form" model="ir.ui.view">
+        <field name="name">festival.bonus.config.form</field>
+        <field name="model">festival.bonus.config</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm_bonus" string="Confirm"
+                            type="object" class="btn-primary"
+                            invisible="state == 'confirmed'"/>
+                    <button name="action_reset_draft" string="Reset to Draft"
+                            type="object" invisible="state == 'draft'"/>
+                    <button name="action_open_bulk_add_wizard"
+                            string="Bulk Add Employees" type="object"
+                            invisible="state == 'confirmed'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Festival Name..."/></h1>
+                    </div>
+                    <group>
+                        <group string="Schedule">
+                            <field name="bonus_month"/>
+                            <field name="bonus_year"/>
+                            <field name="template_id" options="{'no_create': True}"/>
+                        </group>
+                        <group string="Summary">
+                            <field name="total_bonus"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Bonus Rule" name="rule">
+                            <group>
+                                <group string="Calculation">
+                                    <field name="salary_base"/>
+                                    <field name="bonus_percentage"/>
+                                    <field name="calculation_basis"/>
+                                    <field name="min_amount"/>
+                                    <field name="max_amount"/>
+                                </group>
+                                <group string="Eligibility">
+                                    <field name="min_service_months"/>
+                                </group>
+                            </group>
+                            <group string="Eligibility Filter (default for Bulk Add)">
+                                <group>
+                                    <field name="company_id"/>
+                                    <field name="department_id"/>
+                                </group>
+                                <group>
+                                    <field name="job_id"/>
+                                    <field name="employee_type"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Employees" name="employees">
+                            <field name="bonus_line_ids">
+                                <list editable="bottom"
+                                      decoration-success="is_eligible == True"
+                                      decoration-danger="is_eligible == False">
+                                    <field name="employee_id"/>
+                                    <field name="joining_date" class="text-center"/>
+                                    <field name="service_months" string="Months" readonly="1" class="text-center"/>
+                                    <field name="service_days" string="Days" readonly="1" class="text-center" optional="show"/>
+                                    <field name="eligibility_status" string="Eligibility" readonly="1" class="text-center"/>
+                                    <field name="is_eligible" column_invisible="1"/>
+                                    <field name="salary_base_amount" class="text-end"/>
+                                    <field name="bonus_amount" readonly="1" class="text-end"/>
+                                    <field name="is_clamped" string="Adjusted" widget="boolean_toggle" readonly="1" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_festival_bonus" model="ir.actions.act_window">
+        <field name="name">Festival Bonus</field>
+        <field name="res_model">festival.bonus.config</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Festival Bonus
+            </p>
+            <p>
+                Select a template and the bonus rule will be filled in automatically.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menus -->
+    <menuitem id="menu_festival_bonus_root" name="Festival Bonus" sequence="10"/>
+
+    <menuitem id="menu_festival_bonus_main"
+              name="Festival Bonus"
+              parent="menu_festival_bonus_root"
+              action="action_festival_bonus"
+              sequence="10"/>
+
+    <menuitem id="menu_festival_bonus_template_parent"
+              name="Configuration"
+              parent="menu_festival_bonus_root"
+              sequence="20"/>
+
+    <menuitem id="menu_festival_bonus_template"
+              name="Bonus Templates"
+              parent="menu_festival_bonus_template_parent"
+              action="action_festival_bonus_template"
+              sequence="10"/>
+</odoo>
