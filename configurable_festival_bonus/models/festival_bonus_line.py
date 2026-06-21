@@ -53,6 +53,14 @@ class FestivalBonusLine(models.Model):
     )
 
     # ── Bonus result ──
+    applied_percentage = fields.Float(
+        string="Applied %",
+        digits=(5, 2),
+        compute="_compute_bonus_amount",
+        store=True,
+        help="The bonus percentage actually applied to this employee "
+        "(from designation-wise rate or the template default).",
+    )
     bonus_amount = fields.Monetary(
         string="Bonus Amount",
         currency_field="currency_id",
@@ -144,43 +152,48 @@ class FestivalBonusLine(models.Model):
         "salary_base_amount",
         "is_eligible",
         "service_days",
+        "employee_id.job_id",
         "bonus_id.bonus_percentage",
         "bonus_id.calculation_basis",
         "bonus_id.min_amount",
         "bonus_id.max_amount",
+        "bonus_id.use_designation_rates",
+        "bonus_id.designation_rate_ids.bonus_percentage",
+        "bonus_id.designation_rate_ids.job_id",
     )
     def _compute_bonus_amount(self):
         for line in self:
-            template = line.bonus_id
-            if (
-                not line.is_eligible
-                or not line.salary_base_amount
-                or not template.bonus_percentage
-            ):
+            config = line.bonus_id
+
+            # ── Step 0: এই employee এর জন্য applicable % বের করো ──
+            percentage = (
+                config.get_percentage_for_employee(line.employee_id) if config else 0.0
+            )
+            line.applied_percentage = percentage
+
+            if not line.is_eligible or not line.salary_base_amount or not percentage:
                 line.bonus_amount = 0.0
                 line.is_clamped = False
                 continue
 
             # ── Step 1: Calculate raw amount per calculation_basis ──
-            if template.calculation_basis == "day":
+            if config.calculation_basis == "day":
                 # Day basis: per-day salary x eligible days x percentage
                 per_day_salary = line.salary_base_amount / 30.0
-                calculated = (
-                    per_day_salary * line.service_days * template.bonus_percentage / 100
-                )
+                calculated = per_day_salary * line.service_days * percentage / 100
             else:
                 # Month basis: full salary x percentage
-                calculated = line.salary_base_amount * template.bonus_percentage / 100
+                calculated = line.salary_base_amount * percentage / 100
 
             # ── Step 2: Clamp between min_amount and max_amount ──
             final_amount = calculated
             clamped = False
 
-            if template.min_amount and calculated < template.min_amount:
-                final_amount = template.min_amount
+            if config.min_amount and calculated < config.min_amount:
+                final_amount = config.min_amount
                 clamped = True
-            elif template.max_amount and calculated > template.max_amount:
-                final_amount = template.max_amount
+            elif config.max_amount and calculated > config.max_amount:
+                final_amount = config.max_amount
                 clamped = True
 
             line.bonus_amount = final_amount

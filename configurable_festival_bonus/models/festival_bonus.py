@@ -46,6 +46,19 @@ class FestivalBonusConfig(models.Model):
         string="Bonus Percentage (%)",
         digits=(5, 2),
         tracking=True,
+        help="Used when 'Use Designation-wise Bonus %' is OFF.",
+    )
+    use_designation_rates = fields.Boolean(
+        string="Use Designation-wise Bonus %",
+        tracking=True,
+        help="If enabled, bonus percentage is determined per employee's "
+        "Designation. Employees whose designation is not listed will "
+        "NOT be eligible (0 bonus).",
+    )
+    designation_rate_ids = fields.One2many(
+        "festival.bonus.designation.rate",
+        "config_id",
+        string="Designation-wise Rates",
     )
     calculation_basis = fields.Selection(
         [
@@ -137,6 +150,24 @@ class FestivalBonusConfig(models.Model):
         self.max_amount = t.max_amount
         self.min_service_months = t.min_service_months
         self.min_service_days = t.min_service_days
+        self.use_designation_rates = t.use_designation_rates
+
+        # Designation-wise rate rows কপি করো (নতুন, independent রেকর্ড হিসেবে)
+        rate_commands = [(5, 0, 0)]  # প্রথমে existing সব clear করো
+        for rate in t.designation_rate_ids:
+            rate_commands.append(
+                (
+                    0,
+                    0,
+                    {
+                        "job_id": rate.job_id.id,
+                        "bonus_percentage": rate.bonus_percentage,
+                        "sequence": rate.sequence,
+                    },
+                )
+            )
+        self.designation_rate_ids = rate_commands
+
         self.department_id = t.department_id
         self.job_id = t.job_id
         self.employee_type = t.employee_type
@@ -156,6 +187,8 @@ class FestivalBonusConfig(models.Model):
         "min_service_months",
         "min_service_days",
         "bonus_date",
+        "use_designation_rates",
+        "designation_rate_ids",
     )
     def _onchange_rule_fields(self):
         self._recalculate_all_lines()
@@ -172,6 +205,25 @@ class FestivalBonusConfig(models.Model):
             )
             line._compute_eligibility()
             line._compute_bonus_amount()
+
+    def get_percentage_for_employee(self, employee):
+        """
+        Employee-er jonno applicable bonus percentage বের করে।
+        use_designation_rates ON হলে -> employee.job_id দিয়ে designation_rate_ids
+        এ match খোঁজে; match না পেলে 0.0 (not eligible)।
+        OFF হলে -> single bonus_percentage সবার জন্য প্রযোজ্য।
+        """
+        self.ensure_one()
+        if not self.use_designation_rates:
+            return self.bonus_percentage or 0.0
+
+        if not employee.job_id:
+            return 0.0
+
+        rate = self.designation_rate_ids.filtered(lambda r: r.job_id == employee.job_id)
+        if rate:
+            return rate[0].bonus_percentage
+        return 0.0
 
     def action_confirm_bonus(self):
         self.ensure_one()
