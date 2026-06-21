@@ -6,35 +6,18 @@ class FestivalBonusConfig(models.Model):
     _name = "festival.bonus.config"
     _description = "Festival Bonus Configuration"
     _inherit = ["mail.thread", "mail.activity.mixin"]
-    _order = "bonus_year desc, bonus_month desc"
+    _order = "bonus_date desc"
 
     name = fields.Char(string="Festival Name", required=True, tracking=True)
 
-    bonus_month = fields.Selection(
-        [
-            ("1", "January"),
-            ("2", "February"),
-            ("3", "March"),
-            ("4", "April"),
-            ("5", "May"),
-            ("6", "June"),
-            ("7", "July"),
-            ("8", "August"),
-            ("9", "September"),
-            ("10", "October"),
-            ("11", "November"),
-            ("12", "December"),
-        ],
-        string="Month",
+    bonus_date = fields.Date(
+        string="Bonus Applicable Date",
         required=True,
-        default=lambda self: str(fields.Date.today().month),
+        default=fields.Date.context_today,
         tracking=True,
-    )
-    bonus_year = fields.Integer(
-        string="Year",
-        required=True,
-        default=lambda self: fields.Date.today().year,
-        tracking=True,
+        help="The reference date used to calculate each employee's service "
+        "duration (joining date -> this date) for eligibility and "
+        "pro-rata bonus calculation.",
     )
 
     # ── Template link ──
@@ -86,6 +69,13 @@ class FestivalBonusConfig(models.Model):
         string="Minimum Service (Months)",
         default=6,
         tracking=True,
+        help="Used for eligibility check when Calculation Basis = Month.",
+    )
+    min_service_days = fields.Integer(
+        string="Minimum Service (Days)",
+        default=180,
+        tracking=True,
+        help="Used for eligibility check when Calculation Basis = Day.",
     )
 
     # ── Filter fields (copied from template, used as wizard defaults) ──
@@ -146,6 +136,7 @@ class FestivalBonusConfig(models.Model):
         self.min_amount = t.min_amount
         self.max_amount = t.max_amount
         self.min_service_months = t.min_service_months
+        self.min_service_days = t.min_service_days
         self.department_id = t.department_id
         self.job_id = t.job_id
         self.employee_type = t.employee_type
@@ -163,6 +154,8 @@ class FestivalBonusConfig(models.Model):
         "min_amount",
         "max_amount",
         "min_service_months",
+        "min_service_days",
+        "bonus_date",
     )
     def _onchange_rule_fields(self):
         self._recalculate_all_lines()

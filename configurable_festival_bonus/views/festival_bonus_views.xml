@@ -8,8 +8,7 @@
             <list decoration-success="state == 'confirmed'"
                   decoration-muted="state == 'draft'">
                 <field name="name" string="Festival Name"/>
-                <field name="bonus_month" string="Month"/>
-                <field name="bonus_year" string="Year" widget="char"/>
+                <field name="bonus_date"/>
                 <field name="template_id"/>
                 <field name="bonus_percentage" string="Bonus %"/>
                 <field name="calculation_basis"/>
@@ -44,8 +43,7 @@
                     </div>
                     <group>
                         <group string="Schedule">
-                            <field name="bonus_month"/>
-                            <field name="bonus_year"/>
+                            <field name="bonus_date"/>
                             <field name="template_id" options="{'no_create': True}"/>
                         </group>
                         <group string="Summary">
@@ -63,7 +61,10 @@
                                     <field name="max_amount"/>
                                 </group>
                                 <group string="Eligibility">
-                                    <field name="min_service_months"/>
+                                    <field name="min_service_months"
+                                           invisible="calculation_basis != 'month'"/>
+                                    <field name="min_service_days"
+                                           invisible="calculation_basis != 'day'"/>
                                 </group>
                             </group>
                             <group string="Eligibility Filter (default for Bulk Add)">
@@ -84,7 +85,8 @@
                                       decoration-danger="is_eligible == False">
                                     <field name="employee_id"/>
                                     <field name="joining_date" class="text-center"/>
-                                    <field name="service_months" string="Months" readonly="1" class="text-center"/>
+                                    <field name="bonus_id" column_invisible="1"/>
+                                    <field name="service_months" string="Months" readonly="1" class="text-center" optional="show"/>
                                     <field name="service_days" string="Days" readonly="1" class="text-center" optional="show"/>
                                     <field name="eligibility_status" string="Eligibility" readonly="1" class="text-center"/>
                                     <field name="is_eligible" column_invisible="1"/>

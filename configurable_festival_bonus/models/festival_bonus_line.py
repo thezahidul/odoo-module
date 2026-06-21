@@ -84,28 +84,26 @@ class FestivalBonusLine(models.Model):
         return employee.wage or 0.0
 
     def _get_bonus_reference_date(self):
-        """Bonus month/year এর ১ তারিখ — eligibility এর reference point"""
+        """Festival Bonus Config এর bonus_date — eligibility এর reference point"""
         self.ensure_one()
-        if not self.bonus_id.bonus_month or not self.bonus_id.bonus_year:
-            return False
-        return fields.Date.from_string(
-            f"{self.bonus_id.bonus_year}-{int(self.bonus_id.bonus_month):02d}-01"
-        )
+        return self.bonus_id.bonus_date
 
     @api.depends(
         "joining_date",
-        "bonus_id.bonus_month",
-        "bonus_id.bonus_year",
+        "bonus_id.bonus_date",
+        "bonus_id.calculation_basis",
         "bonus_id.min_service_months",
+        "bonus_id.min_service_days",
     )
     def _compute_eligibility(self):
         """
-        Joining date theke bonus date porjonto:
-        - service_months: relativedelta diye month count
-        - service_days: actual calendar day count
-        Template calculation_basis onujayi parer step e kon ta use hobe
-        seta _compute_bonus_amount e thik hoy, kintu duto e ekhane compute kora hoy
-        karon eligibility check always month diye hoy (min_service_months).
+        Joining date theke bonus_date porjonto:
+        - service_months: relativedelta diye month count (info hisebe sob somoy compute hoy)
+        - service_days: actual calendar day count (info hisebe sob somoy compute hoy)
+
+        Eligibility check template'r calculation_basis onujayi hoy:
+        - 'month' hole  -> service_months >= min_service_months
+        - 'day' hole    -> service_days >= min_service_days
         """
         for line in self:
             bonus_date = line._get_bonus_reference_date()
@@ -123,13 +121,24 @@ class FestivalBonusLine(models.Model):
             line.service_months = max(months, 0)
             line.service_days = max(days, 0)
 
-            required_months = line.bonus_id.min_service_months or 0
-            line.is_eligible = months >= required_months
-            line.eligibility_status = (
-                "✔ Eligible"
-                if line.is_eligible
-                else f"✘ Need {required_months - months} more month(s)"
-            )
+            basis = line.bonus_id.calculation_basis
+
+            if basis == "day":
+                required_days = line.bonus_id.min_service_days or 0
+                line.is_eligible = days >= required_days
+                line.eligibility_status = (
+                    "✔ Eligible"
+                    if line.is_eligible
+                    else f"✘ Need {required_days - days} more day(s)"
+                )
+            else:
+                required_months = line.bonus_id.min_service_months or 0
+                line.is_eligible = months >= required_months
+                line.eligibility_status = (
+                    "✔ Eligible"
+                    if line.is_eligible
+                    else f"✘ Need {required_months - months} more month(s)"
+                )
 
     @api.depends(
         "salary_base_amount",

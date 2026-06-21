@@ -60,11 +60,21 @@ class FestivalBonusTemplate(models.Model):
     )
 
     # ── Eligibility Rule ──
+    # calculation_basis = 'month' হলে min_service_months ব্যবহার হয়
+    # calculation_basis = 'day' হলে min_service_days ব্যবহার হয়
     min_service_months = fields.Integer(
         string="Minimum Service (Months)",
         default=6,
         help="Minimum months of service (from joining date to bonus date) "
-        "required to be eligible for this bonus.",
+        "required to be eligible for this bonus. Used when Calculation "
+        "Basis is set to Month.",
+    )
+    min_service_days = fields.Integer(
+        string="Minimum Service (Days)",
+        default=180,
+        help="Minimum days of service (from joining date to bonus date) "
+        "required to be eligible for this bonus. Used when Calculation "
+        "Basis is set to Day.",
     )
 
     # ── Eligibility Filter fields (used as default filters when adding employees) ──

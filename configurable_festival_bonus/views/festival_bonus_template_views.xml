@@ -12,7 +12,8 @@
                 <field name="salary_base"/>
                 <field name="min_amount"/>
                 <field name="max_amount"/>
-                <field name="min_service_months" string="Min Service (M)"/>
+                <field name="min_service_months" string="Min Service (M)" optional="show"/>
+                <field name="min_service_days" string="Min Service (D)" optional="hide"/>
             </list>
         </field>
     </record>
@@ -39,7 +40,10 @@
                             <field name="max_amount"/>
                         </group>
                         <group string="Eligibility Rule">
-                            <field name="min_service_months"/>
+                            <field name="min_service_months"
+                                   invisible="calculation_basis != 'month'"/>
+                            <field name="min_service_days"
+                                   invisible="calculation_basis != 'day'"/>
                         </group>
                     </group>
                     <group string="Default Eligibility Filter (used when bulk-adding employees)">
