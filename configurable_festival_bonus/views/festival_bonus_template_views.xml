@@ -33,18 +33,25 @@
                     <group>
                         <group string="Calculation Rule">
                             <field name="salary_base"/>
-                            <field name="bonus_percentage"/>
+                            <field name="use_designation_rates"/>
+                            <field name="bonus_percentage" invisible="use_designation_rates" required="not use_designation_rates"/>
                             <field name="calculation_basis"/>
                             <field name="currency_id" invisible="1"/>
                             <field name="min_amount"/>
                             <field name="max_amount"/>
                         </group>
                         <group string="Eligibility Rule">
-                            <field name="min_service_months"
-                                   invisible="calculation_basis != 'month'"/>
-                            <field name="min_service_days"
-                                   invisible="calculation_basis != 'day'"/>
+                            <field name="min_service_months" invisible="calculation_basis != 'month'"/>
+                            <field name="min_service_days" invisible="calculation_basis != 'day'"/>
                         </group>
+                    </group>
+                    <group string="Designation-wise Bonus Percentage" invisible="not use_designation_rates">
+                        <field name="designation_rate_ids" nolabel="1">
+                            <list editable="bottom">
+                                <field name="job_id"/>
+                                <field name="bonus_percentage"/>
+                            </list>
+                        </field>
                     </group>
                     <group string="Default Eligibility Filter (used when bulk-adding employees)">
                         <group>

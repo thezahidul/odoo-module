@@ -97,14 +97,25 @@ class FestivalBonusTemplate(models.Model):
     company_id = fields.Many2one("res.company", string="Company")
     department_id = fields.Many2one("hr.department", string="Department")
     job_id = fields.Many2one("hr.job", string="Designation")
+    # employee_type = fields.Selection(
+    #     [
+    #         ("employee", "Employee"),
+    #         ("student", "Student"),
+    #         ("freelance", "Freelancer"),
+    #     ],
+    #     string="Employee Type",
+    # )
     employee_type = fields.Selection(
-        [
-            ("employee", "Employee"),
-            ("student", "Student"),
-            ("freelance", "Freelancer"),
-        ],
+        selection="_get_employee_types",
         string="Employee Type",
     )
+
+    @api.model
+    def _get_employee_types(self):
+        selection = self.env["hr.employee"]._fields["employee_type"].selection
+        if callable(selection):
+            return selection(self.env["hr.employee"])
+        return selection
 
     note = fields.Text(string="Notes")
 
