@@ -48,8 +48,8 @@
                     <group string="Designation-wise Bonus Percentage" invisible="not use_designation_rates">
                         <field name="designation_rate_ids" nolabel="1">
                             <list editable="bottom">
-                                <field name="job_id"/>
-                                <field name="bonus_percentage"/>
+                                <field name="job_id" width="60%"/>
+                                <field name="bonus_percentage" width="40%"/>
                             </list>
                         </field>
                     </group>
