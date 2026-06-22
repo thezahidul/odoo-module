@@ -20,7 +20,6 @@ class FestivalBonusConfig(models.Model):
         "pro-rata bonus calculation.",
     )
 
-    # ── Template link ──
     template_id = fields.Many2one(
         "festival.bonus.template",
         string="Bonus Template",
@@ -29,7 +28,7 @@ class FestivalBonusConfig(models.Model):
         help="Select a template to auto-fill the calculation rule below.",
     )
 
-    # ── Rule fields (copied from template on selection, editable afterwards) ──
+    # Rule fields (copied from template on selection, editable afterwards)
     salary_base = fields.Selection(
         [
             ("gross_wage", "Gross Wage"),
@@ -91,7 +90,7 @@ class FestivalBonusConfig(models.Model):
         help="Used for eligibility check when Calculation Basis = Day.",
     )
 
-    # ── Filter fields (copied from template, used as wizard defaults) ──
+    # Filter fields (copied from template, used as wizard defaults)
     department_id = fields.Many2one("hr.department", string="Department")
     job_id = fields.Many2one("hr.job", string="Designation")
     employee_type = fields.Selection(
@@ -137,7 +136,7 @@ class FestivalBonusConfig(models.Model):
         for rec in self:
             rec.total_bonus = sum(rec.bonus_line_ids.mapped("bonus_amount"))
 
-    # ── Template selected → auto-fill all rule fields ──
+    # Template selected → auto-fill all rule fields
     @api.onchange("template_id")
     def _onchange_template_id(self):
         if not self.template_id:
@@ -152,8 +151,8 @@ class FestivalBonusConfig(models.Model):
         self.min_service_days = t.min_service_days
         self.use_designation_rates = t.use_designation_rates
 
-        # Designation-wise rate rows কপি করো (নতুন, independent রেকর্ড হিসেবে)
-        rate_commands = [(5, 0, 0)]  # প্রথমে existing সব clear করো
+        # Designation-wise rate rows copy
+        rate_commands = [(5, 0, 0)]
         for rate in t.designation_rate_ids:
             rate_commands.append(
                 (
@@ -177,7 +176,8 @@ class FestivalBonusConfig(models.Model):
         # Template change হলে existing employee lines ও recalculate করো
         self._recalculate_all_lines()
 
-    # ── Any rule field changed manually → recalculate existing lines ──
+    # Any rule field changed manually
+    # recalculate existing lines
     @api.onchange(
         "salary_base",
         "bonus_percentage",

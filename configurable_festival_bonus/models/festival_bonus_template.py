@@ -13,7 +13,7 @@ class FestivalBonusTemplate(models.Model):
     )
     active = fields.Boolean(default=True)
 
-    # ── Calculation Rule ──
+    # Calculation Rule
     use_designation_rates = fields.Boolean(
         string="Use Designation-wise Bonus %",
         default=False,
@@ -75,9 +75,7 @@ class FestivalBonusTemplate(models.Model):
         default=lambda self: self.env.company.currency_id,
     )
 
-    # ── Eligibility Rule ──
-    # calculation_basis = 'month' হলে min_service_months ব্যবহার হয়
-    # calculation_basis = 'day' হলে min_service_days ব্যবহার হয়
+    # Eligibility Rule
     min_service_months = fields.Integer(
         string="Minimum Service (Months)",
         default=6,
@@ -93,7 +91,7 @@ class FestivalBonusTemplate(models.Model):
         "Basis is set to Day.",
     )
 
-    # ── Eligibility Filter fields (used as default filters when adding employees) ──
+    # Eligibility Filter fields (used as default filters when adding employees)
     company_id = fields.Many2one("res.company", string="Company")
     department_id = fields.Many2one("hr.department", string="Department")
     job_id = fields.Many2one("hr.job", string="Designation")
@@ -120,12 +118,6 @@ class FestivalBonusTemplate(models.Model):
     note = fields.Text(string="Notes")
 
     def get_percentage_for_employee(self, employee):
-        """
-        Employee-er jonno applicable bonus percentage বের করে।
-        use_designation_rates ON হলে -> employee.job_id দিয়ে designation_rate_ids
-        এ match খোঁজে; match না পেলে 0.0 (not eligible)।
-        OFF হলে -> single bonus_percentage সবার জন্য প্রযোজ্য।
-        """
         self.ensure_one()
         if not self.use_designation_rates:
             return self.bonus_percentage or 0.0

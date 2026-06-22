@@ -30,7 +30,7 @@ class FestivalBonusLine(models.Model):
         currency_field="currency_id",
     )
 
-    # ── Eligibility (computed from joining_date -> bonus date) ──
+    # Eligibility (computed from joining_date -> bonus date)
     service_months = fields.Integer(
         string="Service (Months)",
         compute="_compute_eligibility",
@@ -52,7 +52,7 @@ class FestivalBonusLine(models.Model):
         store=True,
     )
 
-    # ── Bonus result ──
+    # Bonus result
     applied_percentage = fields.Float(
         string="Applied %",
         digits=(5, 2),
@@ -75,7 +75,6 @@ class FestivalBonusLine(models.Model):
     )
 
     def _get_salary_from_payslip(self, employee, salary_base):
-        """Confirmed payslip থেকে salary_base field এর value নাও, না পেলে employee.wage"""
         if not employee:
             return 0.0
         if "hr.payslip" in self.env:
@@ -92,7 +91,6 @@ class FestivalBonusLine(models.Model):
         return employee.wage or 0.0
 
     def _get_bonus_reference_date(self):
-        """Festival Bonus Config এর bonus_date — eligibility এর reference point"""
         self.ensure_one()
         return self.bonus_id.bonus_date
 
@@ -164,8 +162,6 @@ class FestivalBonusLine(models.Model):
     def _compute_bonus_amount(self):
         for line in self:
             config = line.bonus_id
-
-            # ── Step 0: এই employee এর জন্য applicable % বের করো ──
             percentage = (
                 config.get_percentage_for_employee(line.employee_id) if config else 0.0
             )
@@ -176,7 +172,7 @@ class FestivalBonusLine(models.Model):
                 line.is_clamped = False
                 continue
 
-            # ── Step 1: Calculate raw amount per calculation_basis ──
+            # Step 1: Calculate raw amount per calculation_basis
             if config.calculation_basis == "day":
                 # Day basis: per-day salary x eligible days x percentage
                 per_day_salary = line.salary_base_amount / 30.0
@@ -185,7 +181,7 @@ class FestivalBonusLine(models.Model):
                 # Month basis: full salary x percentage
                 calculated = line.salary_base_amount * percentage / 100
 
-            # ── Step 2: Clamp between min_amount and max_amount ──
+            # Step 2: Clamp between min_amount and max_amount
             final_amount = calculated
             clamped = False
 
