@@ -66,7 +66,15 @@
                     <group>
                         <field name="note" placeholder="Internal notes about this template..." nolabel="1"/>
                     </group>
+
+
+                    <group string="Accounting Settings">
+                        <field name="journal_id"/>
+                        <field name="expense_account_id"/>
+                        <field name="payable_account_id"/>
+                    </group>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>

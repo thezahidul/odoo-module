@@ -207,12 +207,6 @@ class FestivalBonusConfig(models.Model):
             line._compute_bonus_amount()
 
     def get_percentage_for_employee(self, employee):
-        """
-        Employee-er jonno applicable bonus percentage বের করে।
-        use_designation_rates ON হলে -> employee.job_id দিয়ে designation_rate_ids
-        এ match খোঁজে; match না পেলে 0.0 (not eligible)।
-        OFF হলে -> single bonus_percentage সবার জন্য প্রযোজ্য।
-        """
         self.ensure_one()
         if not self.use_designation_rates:
             return self.bonus_percentage or 0.0
@@ -227,12 +221,102 @@ class FestivalBonusConfig(models.Model):
 
     def action_confirm_bonus(self):
         self.ensure_one()
+
+        # 1. Remove duplicate employees
+        seen = set()
+        to_unlink = self.env["festival.bonus.line"]
+        for line in self.bonus_line_ids:
+            if line.employee_id.id in seen:
+                to_unlink |= line
+            else:
+                seen.add(line.employee_id.id)
+        if to_unlink:
+            to_unlink.unlink()
+
+        # 2. Basic validation
         if not self.bonus_line_ids:
             raise UserError(_("Please add employees before confirming."))
+
+        if (
+            not self.template_id.expense_account_id
+            or not self.template_id.payable_account_id
+        ):
+            raise UserError(
+                _("Please configure the Expense and Payable accounts first.")
+            )
+
+        if self.total_bonus <= 0:
+            raise UserError(_("Total bonus amount must be greater than zero."))
+
+        # 3. Prepare journal lines
+        move_lines = []
+
+        # Separate debit line for each employee
+        for line in self.bonus_line_ids:
+            move_lines.append(
+                (
+                    0,
+                    0,
+                    {
+                        "name": f"{self.name}",
+                        "partner_id": line.employee_id.work_contact_id.id,
+                        "account_id": self.template_id.expense_account_id.id,
+                        "debit": line.bonus_amount,
+                        "credit": 0,
+                    },
+                )
+            )
+
+        # Total amount for a credit line
+        move_lines.append(
+            (
+                0,
+                0,
+                {
+                    "name": f"Total Festival Bonus: {self.name}",
+                    "account_id": self.template_id.payable_account_id.id,
+                    "debit": 0,
+                    "credit": self.total_bonus,
+                },
+            )
+        )
+
+        # 4. Create journal entry
+        move_vals = {
+            "journal_id": self.template_id.journal_id.id,
+            "date": fields.Date.today(),
+            "ref": _("Festival Bonus: ") + self.name,
+            "state": "draft",
+            "line_ids": move_lines,
+        }
+
+        move = self.env["account.move"].create(move_vals)
+        self.template_id.move_id = move.id
         self.state = "confirmed"
 
     def action_reset_draft(self):
         self.ensure_one()
+
+        # 1. If journal entry exists
+        if self.template_id.move_id:
+            # Condition: If the entry is 'posted', it cannot be reset.
+            if self.template_id.move_id.state == "posted":
+                raise UserError(
+                    _("Festival bonuses cannot be reset if there are posted entries!")
+                )
+
+            # Condition: If the entry is not in 'cancel' mode, it cannot be reset.
+            if self.template_id.move_id.state != "cancel":
+                raise UserError(
+                    _(
+                        "Festival bonuses cannot be reset if the journal entry is not in 'Cancel' mode!"
+                    )
+                )
+
+            # Condition: If the entry is in 'cancel' mode, it can be reset.
+            self.template_id.move_id.unlink()
+            self.template_id.move_id = False
+
         self.state = "draft"
 
     def action_open_bulk_add_wizard(self):

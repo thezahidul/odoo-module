@@ -4,6 +4,7 @@ from odoo import models, fields, api
 class FestivalBonusTemplate(models.Model):
     _name = "festival.bonus.template"
     _description = "Festival Bonus Template"
+    _inherit = ["mail.thread", "mail.activity.mixin"]
     _order = "name"
 
     name = fields.Char(
@@ -91,6 +92,23 @@ class FestivalBonusTemplate(models.Model):
         "Basis is set to Day.",
     )
 
+    # Accounting fields
+    expense_account_id = fields.Many2one(
+        "account.account",
+        string="Expense Account",
+        domain="[('account_type', '=', 'expense')]",
+    )
+    payable_account_id = fields.Many2one(
+        "account.account",
+        string="Payable Account",
+        domain="[('account_type', '=', 'liability_current')]",
+    )
+    journal_id = fields.Many2one(
+        "account.journal", string="Journal", domain="[('type', '=', 'general')]"
+    )
+
+    move_id = fields.Many2one("account.move", string="Journal Entry", readonly=True)
+
     # Eligibility Filter fields (used as default filters when adding employees)
     company_id = fields.Many2one("res.company", string="Company")
     department_id = fields.Many2one("hr.department", string="Department")
@@ -138,3 +156,98 @@ class FestivalBonusTemplate(models.Model):
                 label = f"{rec.name} ({rec.bonus_percentage}%)"
             result.append((rec.id, label))
         return result
+
+        # Account section
+        # 1. Remove duplicate employees
+        seen = set()
+        to_unlink = self.env["festival.bonus.line"]
+        for line in self.bonus_line_ids:
+            if line.employee_id.id in seen:
+                to_unlink |= line
+            else:
+                seen.add(line.employee_id.id)
+        if to_unlink:
+            to_unlink.unlink()
+
+        # 2. Basic validation
+        if not self.bonus_line_ids:
+            raise UserError(_("Please add employees before confirming."))
+
+        if not self.expense_account_id or not self.payable_account_id:
+            raise UserError(
+                _("Please configure the Expense and Payable accounts first.")
+            )
+
+        if self.total_bonus <= 0:
+            raise UserError(_("Total bonus amount must be greater than zero."))
+
+        # 3. Prepare journal lines
+        move_lines = []
+
+        # Separate debit line for each employee
+        for line in self.bonus_line_ids:
+            move_lines.append(
+                (
+                    0,
+                    0,
+                    {
+                        "name": f"{self.name}",
+                        "partner_id": line.employee_id.work_contact_id.id,
+                        "account_id": self.expense_account_id.id,
+                        "debit": line.bonus_amount,
+                        "credit": 0,
+                    },
+                )
+            )
+
+        # Total amount for a credit line
+        move_lines.append(
+            (
+                0,
+                0,
+                {
+                    "name": f"Total Festival Bonus: {self.name}",
+                    "account_id": self.payable_account_id.id,
+                    "debit": 0,
+                    "credit": self.total_bonus,
+                },
+            )
+        )
+
+        # 4. Create journal entry
+        move_vals = {
+            "journal_id": self.journal_id.id,
+            "date": fields.Date.today(),
+            "ref": _("Festival Bonus: ") + self.name,
+            "state": "draft",
+            "line_ids": move_lines,
+        }
+
+        move = self.env["account.move"].create(move_vals)
+        self.move_id = move.id
+        self.state = "confirmed"
+
+    def action_reset_draft(self):
+        self.ensure_one()
+
+        # 1. If journal entry exists
+        if self.move_id:
+            # Condition: If the entry is 'posted', it cannot be reset.
+            if self.move_id.state == "posted":
+                raise UserError(
+                    _("Festival bonuses cannot be reset if there are posted entries!")
+                )
+
+            # Condition: If the entry is not in 'cancel' mode, it cannot be reset.
+            if self.move_id.state != "cancel":
+                raise UserError(
+                    _(
+                        "Festival bonuses cannot be reset if the journal entry is not in 'Cancel' mode!"
+                    )
+                )
+
+            # Condition: If the entry is in 'cancel' mode, it can be reset.
+            self.move_id.unlink()
+            self.move_id = False
+
+        self.state = "draft"
