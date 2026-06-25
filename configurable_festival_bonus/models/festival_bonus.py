@@ -131,6 +131,23 @@ class FestivalBonusConfig(models.Model):
         store=True,
     )
 
+    expense_account_id = fields.Many2one(
+        "account.account",
+        string="Expense Account",
+        domain="[('account_type', '=', 'expense')]",
+    )
+    payable_account_id = fields.Many2one(
+        "account.account",
+        string="Payable Account",
+        domain="[('account_type', '=', 'liability_current')]",
+    )
+    journal_id = fields.Many2one(
+        "account.journal",
+        string="Journal",
+        domain="[('type', '=', 'general')]",
+    )
+    move_id = fields.Many2one("account.move", string="Journal Entry", readonly=True)
+
     @api.depends("bonus_line_ids.bonus_amount")
     def _compute_total_bonus(self):
         for rec in self:
@@ -150,6 +167,9 @@ class FestivalBonusConfig(models.Model):
         self.min_service_months = t.min_service_months
         self.min_service_days = t.min_service_days
         self.use_designation_rates = t.use_designation_rates
+        self.expense_account_id = t.expense_account_id
+        self.payable_account_id = t.payable_account_id
+        self.journal_id = t.journal_id
 
         # Designation-wise rate rows copy
         rate_commands = [(5, 0, 0)]
@@ -237,10 +257,7 @@ class FestivalBonusConfig(models.Model):
         if not self.bonus_line_ids:
             raise UserError(_("Please add employees before confirming."))
 
-        if (
-            not self.template_id.expense_account_id
-            or not self.template_id.payable_account_id
-        ):
+        if not self.expense_account_id or not self.payable_account_id:
             raise UserError(
                 _("Please configure the Expense and Payable accounts first.")
             )
@@ -260,7 +277,7 @@ class FestivalBonusConfig(models.Model):
                     {
                         "name": f"{self.name}",
                         "partner_id": line.employee_id.work_contact_id.id,
-                        "account_id": self.template_id.expense_account_id.id,
+                        "account_id": self.expense_account_id.id,
                         "debit": line.bonus_amount,
                         "credit": 0,
                     },
@@ -274,7 +291,7 @@ class FestivalBonusConfig(models.Model):
                 0,
                 {
                     "name": f"Total Festival Bonus: {self.name}",
-                    "account_id": self.template_id.payable_account_id.id,
+                    "account_id": self.payable_account_id.id,
                     "debit": 0,
                     "credit": self.total_bonus,
                 },
@@ -283,7 +300,7 @@ class FestivalBonusConfig(models.Model):
 
         # 4. Create journal entry
         move_vals = {
-            "journal_id": self.template_id.journal_id.id,
+            "journal_id": self.journal_id.id,
             "date": fields.Date.today(),
             "ref": _("Festival Bonus: ") + self.name,
             "state": "draft",
@@ -291,22 +308,22 @@ class FestivalBonusConfig(models.Model):
         }
 
         move = self.env["account.move"].create(move_vals)
-        self.template_id.move_id = move.id
+        self.move_id = move.id
         self.state = "confirmed"
 
     def action_reset_draft(self):
         self.ensure_one()
 
         # 1. If journal entry exists
-        if self.template_id.move_id:
+        if self.move_id:
             # Condition: If the entry is 'posted', it cannot be reset.
-            if self.template_id.move_id.state == "posted":
+            if self.move_id.state == "posted":
                 raise UserError(
                     _("Festival bonuses cannot be reset if there are posted entries!")
                 )
 
             # Condition: If the entry is not in 'cancel' mode, it cannot be reset.
-            if self.template_id.move_id.state != "cancel":
+            if self.move_id.state != "cancel":
                 raise UserError(
                     _(
                         "Festival bonuses cannot be reset if the journal entry is not in 'Cancel' mode!"
@@ -314,8 +331,8 @@ class FestivalBonusConfig(models.Model):
                 )
 
             # Condition: If the entry is in 'cancel' mode, it can be reset.
-            self.template_id.move_id.unlink()
-            self.template_id.move_id = False
+            self.move_id.unlink()
+            self.move_id = False
 
         self.state = "draft"
 

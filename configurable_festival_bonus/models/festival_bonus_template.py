@@ -1,4 +1,5 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 
 class FestivalBonusTemplate(models.Model):
@@ -157,7 +158,10 @@ class FestivalBonusTemplate(models.Model):
             result.append((rec.id, label))
         return result
 
-        # Account section
+    # Account section
+
+    def action_confirm_bonus(self):
+        self.ensure_one()
         # 1. Remove duplicate employees
         seen = set()
         to_unlink = self.env["festival.bonus.line"]
