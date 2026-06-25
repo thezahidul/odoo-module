@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portfolio_homepage" inherit_id="website.homepage" name="Portfolio Home">
+        <xpath expr="//div[@id='wrap']" position="inside">
+            <section class="portfolio_hero_section py-5 bg-dark text-white text-center">
+                <div class="container">
+                    <h1 class="display-4 fw-bold">Hello, I am a Developer</h1>
+                    <p class="lead">Building robust backend systems and smart solutions.</p>
+                    <a href="#projects" class="btn btn-primary btn-lg mt-3">View My Work</a>
+                </div>
+            </section>
+        </xpath>
+    </template>
+</odoo>

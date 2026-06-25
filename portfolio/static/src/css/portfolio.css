@@ -1,0 +1,13 @@
+/* Custom Styles for Portfolio Theme */
+.portfolio_hero_section {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    padding-top: 80px;
+    padding-bottom: 80px;
+}
+.s_portfolio_projects .card {
+    border: none;
+    transition: transform 0.2s ease-in-out;
+}
+.s_portfolio_projects .card:hover {
+    transform: translateY(-5px);
+}
