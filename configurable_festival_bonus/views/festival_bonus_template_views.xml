@@ -39,6 +39,7 @@
                             <field name="currency_id" invisible="1"/>
                             <field name="min_amount"/>
                             <field name="max_amount"/>
+                            <field name="employee_type"/>
                         </group>
                         <group string="Eligibility Rule">
                             <field name="min_service_months" invisible="calculation_basis != 'month'"/>
@@ -46,14 +47,16 @@
                         </group>
                     </group>
                     <group string="Designation-wise Bonus Percentage" invisible="not use_designation_rates">
-                        <field name="designation_rate_ids" nolabel="1">
+                        <field name="designation_rate_ids" nolabel="1" colspan="4">
                             <list editable="bottom">
-                                <field name="job_id" width="60%"/>
-                                <field name="bonus_percentage" width="40%"/>
+                                <field name="company_id"/>
+                                <field name="department_id"/>                                
+                                <field name="job_id"/>
+                                <field name="bonus_percentage"/>
                             </list>
                         </field>
                     </group>
-                    <group string="Default Eligibility Filter (used when bulk-adding employees)">
+                    <!-- <group string="Default Eligibility Filter (used when bulk-adding employees)">
                         <group>
                             <field name="company_id"/>
                             <field name="department_id"/>
@@ -62,10 +65,8 @@
                             <field name="job_id"/>
                             <field name="employee_type"/>
                         </group>
-                    </group>
-                    <group>
-                        <field name="note" placeholder="Internal notes about this template..." nolabel="1"/>
-                    </group>
+                    </group> -->
+
 
 
                     <group string="Accounting Settings">

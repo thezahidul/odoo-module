@@ -19,11 +19,6 @@
         "views/festival_bonus_wizard_views.xml",
         "views/hr_employee_views.xml",
     ],
-    "assets": {
-        "web.assets_backend": [
-            "configurable_festival_bonus/static/src/css/style.css",
-        ],
-    },
     "installable": True,
     "application": True,
     "auto_install": False,

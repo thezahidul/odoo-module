@@ -61,14 +61,16 @@
                                 </group>
                             </group>
                             <group string="Designation-wise Bonus Percentage" invisible="not use_designation_rates">
-                                <field name="designation_rate_ids" nolabel="1">
+                                <field name="designation_rate_ids" nolabel="1" colspan="4">
                                     <list editable="bottom">
-                                        <field name="job_id" width="60%"/>
-                                        <field name="bonus_percentage" width="40%"/>
+                                        <field name="company_id" optional="show"/>
+                                        <field name="department_id" optional="show"/>
+                                        <field name="job_id" domain="[('department_id', '=', department_id)]"/>
+                                        <field name="bonus_percentage"/>
                                     </list>
                                 </field>
                             </group>
-                            <group string="Eligibility Filter (default for Bulk Add)">
+                            <!-- <group string="Eligibility Filter (default for Bulk Add)">
                                 <group>
                                     <field name="company_id"/>
                                     <field name="department_id"/>
@@ -77,7 +79,7 @@
                                     <field name="job_id"/>
                                     <field name="employee_type"/>
                                 </group>
-                            </group>
+                            </group> -->
                             <group string="Accounting Settings">
                                 <field name="journal_id"/>
                                 <field name="expense_account_id"/>
@@ -88,6 +90,7 @@
                             <field name="bonus_line_ids">
                                 <list editable="bottom" decoration-success="is_eligible == True" decoration-danger="is_eligible == False">
                                     <field name="employee_id"/>
+                                    <field name="job_id"/>
                                     <field name="joining_date" class="text-center"/>
                                     <field name="bonus_id" column_invisible="1"/>
                                     <field name="service_months" string="Months" readonly="1" class="text-center" optional="show"/>

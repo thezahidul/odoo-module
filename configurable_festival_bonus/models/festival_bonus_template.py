@@ -108,12 +108,21 @@ class FestivalBonusTemplate(models.Model):
         "account.journal", string="Journal", domain="[('type', '=', 'general')]"
     )
 
+    department_id = fields.Many2one("hr.department", string="Department")
+    job_id = fields.Many2one("hr.job", string="Designation")
+    company_id = fields.Many2one(
+        "res.company",
+        string="Company",
+        default=lambda self: self.env.company,
+        index=True,
+    )
+
     move_id = fields.Many2one("account.move", string="Journal Entry", readonly=True)
 
     # Eligibility Filter fields (used as default filters when adding employees)
-    company_id = fields.Many2one("res.company", string="Company")
-    department_id = fields.Many2one("hr.department", string="Department")
-    job_id = fields.Many2one("hr.job", string="Designation")
+    # company_id = fields.Many2one("res.company", string="Company")
+    # department_id = fields.Many2one("hr.department", string="Department")
+    # job_id = fields.Many2one("hr.job", string="Designation")
     # employee_type = fields.Selection(
     #     [
     #         ("employee", "Employee"),
@@ -133,8 +142,6 @@ class FestivalBonusTemplate(models.Model):
         if callable(selection):
             return selection(self.env["hr.employee"])
         return selection
-
-    note = fields.Text(string="Notes")
 
     def get_percentage_for_employee(self, employee):
         self.ensure_one()

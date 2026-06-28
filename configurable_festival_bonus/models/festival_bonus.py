@@ -28,7 +28,6 @@ class FestivalBonusConfig(models.Model):
         help="Select a template to auto-fill the calculation rule below.",
     )
 
-    # Rule fields (copied from template on selection, editable afterwards)
     salary_base = fields.Selection(
         [
             ("gross_wage", "Gross Wage"),
@@ -40,7 +39,6 @@ class FestivalBonusConfig(models.Model):
         default="basic_wage",
         tracking=True,
     )
-
     bonus_percentage = fields.Float(
         string="Bonus Percentage (%)",
         digits=(5, 2),
@@ -69,14 +67,12 @@ class FestivalBonusConfig(models.Model):
         required=True,
         tracking=True,
     )
-
     min_amount = fields.Monetary(
         string="Minimum Bonus Amount", currency_field="currency_id"
     )
     max_amount = fields.Monetary(
         string="Maximum Bonus Amount", currency_field="currency_id"
     )
-
     min_service_months = fields.Integer(
         string="Minimum Service (Months)",
         default=6,
@@ -90,17 +86,27 @@ class FestivalBonusConfig(models.Model):
         help="Used for eligibility check when Calculation Basis = Day.",
     )
 
-    # Filter fields (copied from template, used as wizard defaults)
+    # ── Filter fields (copied from template, used as wizard defaults) ──
+    company_id = fields.Many2one(
+        "res.company",
+        string="Company",
+        default=lambda self: self.env.company,
+        index=True,
+        tracking=True,
+    )
     department_id = fields.Many2one("hr.department", string="Department")
     job_id = fields.Many2one("hr.job", string="Designation")
     employee_type = fields.Selection(
-        [
-            ("employee", "Employee"),
-            ("student", "Student"),
-            ("freelance", "Freelancer"),
-        ],
+        selection="_get_employee_types",
         string="Employee Type",
     )
+
+    @api.model
+    def _get_employee_types(self):
+        selection = self.env["hr.employee"]._fields["employee_type"].selection
+        if callable(selection):
+            return selection(self.env["hr.employee"])
+        return selection
 
     state = fields.Selection(
         [
@@ -111,12 +117,6 @@ class FestivalBonusConfig(models.Model):
         tracking=True,
     )
 
-    company_id = fields.Many2one(
-        "res.company",
-        string="Company",
-        default=lambda self: self.env.company,
-        index=True,
-    )
     currency_id = fields.Many2one("res.currency", related="company_id.currency_id")
 
     bonus_line_ids = fields.One2many(
@@ -131,6 +131,7 @@ class FestivalBonusConfig(models.Model):
         store=True,
     )
 
+    # ── Accounting fields ──
     expense_account_id = fields.Many2one(
         "account.account",
         string="Expense Account",
@@ -148,12 +149,13 @@ class FestivalBonusConfig(models.Model):
     )
     move_id = fields.Many2one("account.move", string="Journal Entry", readonly=True)
 
+    # ── Compute ──
     @api.depends("bonus_line_ids.bonus_amount")
     def _compute_total_bonus(self):
         for rec in self:
             rec.total_bonus = sum(rec.bonus_line_ids.mapped("bonus_amount"))
 
-    # Template selected → auto-fill all rule fields
+    # ── Template selected → auto-fill all rule fields ──
     @api.onchange("template_id")
     def _onchange_template_id(self):
         if not self.template_id:
@@ -179,6 +181,8 @@ class FestivalBonusConfig(models.Model):
                     0,
                     0,
                     {
+                        "company_id": rate.company_id.id,
+                        "department_id": rate.department_id.id,
                         "job_id": rate.job_id.id,
                         "bonus_percentage": rate.bonus_percentage,
                         "sequence": rate.sequence,
@@ -187,17 +191,16 @@ class FestivalBonusConfig(models.Model):
             )
         self.designation_rate_ids = rate_commands
 
+        # Filter fields copy
         self.department_id = t.department_id
         self.job_id = t.job_id
         self.employee_type = t.employee_type
         if t.company_id:
             self.company_id = t.company_id
 
-        # Template change হলে existing employee lines ও recalculate করো
         self._recalculate_all_lines()
 
-    # Any rule field changed manually
-    # recalculate existing lines
+    # ── Any rule field changed manually → recalculate lines ──
     @api.onchange(
         "salary_base",
         "bonus_percentage",
@@ -227,22 +230,19 @@ class FestivalBonusConfig(models.Model):
             line._compute_bonus_amount()
 
     def get_percentage_for_employee(self, employee):
+        """Find the applicable bonus % according to the employee's job_id"""
         self.ensure_one()
         if not self.use_designation_rates:
             return self.bonus_percentage or 0.0
-
         if not employee.job_id:
             return 0.0
-
         rate = self.designation_rate_ids.filtered(lambda r: r.job_id == employee.job_id)
-        if rate:
-            return rate[0].bonus_percentage
-        return 0.0
+        return rate[0].bonus_percentage if rate else 0.0
 
     def action_confirm_bonus(self):
         self.ensure_one()
 
-        # 1. Remove duplicate employees
+        # 1. Duplicate employee remove
         seen = set()
         to_unlink = self.env["festival.bonus.line"]
         for line in self.bonus_line_ids:
@@ -253,38 +253,37 @@ class FestivalBonusConfig(models.Model):
         if to_unlink:
             to_unlink.unlink()
 
-        # 2. Basic validation
+        # 2. Validation
         if not self.bonus_line_ids:
             raise UserError(_("Please add employees before confirming."))
-
         if not self.expense_account_id or not self.payable_account_id:
             raise UserError(
                 _("Please configure the Expense and Payable accounts first.")
             )
-
+        if not self.journal_id:
+            raise UserError(_("Please select a Journal before confirming."))
         if self.total_bonus <= 0:
             raise UserError(_("Total bonus amount must be greater than zero."))
 
-        # 3. Prepare journal lines
+        # 3. Journal lines createtion
         move_lines = []
-
-        # Separate debit line for each employee
         for line in self.bonus_line_ids:
+            if not line.bonus_amount:
+                continue
             move_lines.append(
                 (
                     0,
                     0,
                     {
-                        "name": f"{self.name}",
+                        "name": f"{self.name} - {line.employee_id.name}",
                         "partner_id": line.employee_id.work_contact_id.id,
                         "account_id": self.expense_account_id.id,
                         "debit": line.bonus_amount,
-                        "credit": 0,
+                        "credit": 0.0,
                     },
                 )
             )
 
-        # Total amount for a credit line
         move_lines.append(
             (
                 0,
@@ -292,49 +291,47 @@ class FestivalBonusConfig(models.Model):
                 {
                     "name": f"Total Festival Bonus: {self.name}",
                     "account_id": self.payable_account_id.id,
-                    "debit": 0,
+                    "debit": 0.0,
                     "credit": self.total_bonus,
                 },
             )
         )
 
-        # 4. Create journal entry
-        move_vals = {
-            "journal_id": self.journal_id.id,
-            "date": fields.Date.today(),
-            "ref": _("Festival Bonus: ") + self.name,
-            "state": "draft",
-            "line_ids": move_lines,
-        }
-
-        move = self.env["account.move"].create(move_vals)
+        # 4. Journal entry creation
+        move = self.env["account.move"].create(
+            {
+                "journal_id": self.journal_id.id,
+                "date": fields.Date.today(),
+                "ref": _("Festival Bonus: ") + self.name,
+                "state": "draft",
+                "line_ids": move_lines,
+            }
+        )
         self.move_id = move.id
         self.state = "confirmed"
 
     def action_reset_draft(self):
         self.ensure_one()
-
-        # 1. If journal entry exists
         if self.move_id:
-            # Condition: If the entry is 'posted', it cannot be reset.
             if self.move_id.state == "posted":
-                raise UserError(
-                    _("Festival bonuses cannot be reset if there are posted entries!")
-                )
-
-            # Condition: If the entry is not in 'cancel' mode, it cannot be reset.
+                raise UserError(_("Cannot reset: journal entry is already posted!"))
             if self.move_id.state != "cancel":
                 raise UserError(
-                    _(
-                        "Festival bonuses cannot be reset if the journal entry is not in 'Cancel' mode!"
-                    )
+                    _("Cannot reset: please cancel the journal entry first!")
                 )
-
-            # Condition: If the entry is in 'cancel' mode, it can be reset.
             self.move_id.unlink()
             self.move_id = False
-
         self.state = "draft"
+
+    def action_view_journal_entry(self):
+        self.ensure_one()
+        return {
+            "name": _("Journal Entry"),
+            "type": "ir.actions.act_window",
+            "res_model": "account.move",
+            "view_mode": "form",
+            "res_id": self.move_id.id,
+        }
 
     def action_open_bulk_add_wizard(self):
         self.ensure_one()

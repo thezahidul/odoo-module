@@ -19,6 +19,13 @@ class FestivalBonusLine(models.Model):
         required=True,
         index=True,
     )
+    job_id = fields.Many2one(
+        "hr.job",
+        string="Job Position",
+        related="employee_id.job_id",
+        store=True,
+        readonly=True,
+    )
     currency_id = fields.Many2one(
         "res.currency",
         related="bonus_id.company_id.currency_id",
