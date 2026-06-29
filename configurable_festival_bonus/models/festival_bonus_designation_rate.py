@@ -36,6 +36,7 @@ class FestivalBonusDesignationRate(models.Model):
     company_id = fields.Many2one("res.company", string="Company")
     department_id = fields.Many2one("hr.department", string="Department")
     job_id = fields.Many2one("hr.job", string="Designation")
+    designation_id = fields.Many2one("hr.job", string="Designation")
 
     def name_get(self):
         result = []
